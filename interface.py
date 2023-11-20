@@ -6,18 +6,21 @@ class Mainwin(tk.Tk):
         super().__init__()
         self.title('CrTorrent')
         self.geometry(f"{self.winfo_screenwidth()}x{self.winfo_screenheight()}")
-        self.set_tool_bar()
         
-    
+        self.set_tool_bar()
+
+    #Создания панели инструментов(Open|Edit|View)
     def set_tool_bar(self):
-        #Команда для открытия файловой системы и выбора файла
+       
+        #Функция открытия файловой системы и выбора файла
         def open_file_system(): 
-            target_file = fd.askopenfile(filetypes =[('Torrent Files', '*.torrent')]) #Пользователь выбирает торрент файл
+            #Пользователь выбирает торрент файл
+            target_file = fd.askopenfile(filetypes =[('Torrent Files', '*.torrent')]) 
             if target_file is not None:
-                print(target_file)
+                self.show_info_ab_file(target_file)
 
 
-        #Главная панель управления (Open|Edit|View)
+        #Инициализация панели инструментов (Open|Edit|View)
         main_menu = tk.Menu(self) 
 
         #Всплывающее окно для File
@@ -27,14 +30,15 @@ class Mainwin(tk.Tk):
         file_menu.add_separator()
         file_menu.add_command(label="Exit")
 
-        #Команды с всплывающими списками
+        #Инициализация(File|Edit|View) 
         main_menu.add_cascade(label="File",menu = file_menu)
         main_menu.add_cascade(label="Edit")
         main_menu.add_cascade(label="View")
 
-        #Бинд на окно
+        #Бинд на экран
         self.config(menu=main_menu)
-        
+    
+
         
 
 if __name__ == "__main__":
