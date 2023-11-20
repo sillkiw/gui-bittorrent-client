@@ -1,6 +1,7 @@
 import tkinter as tk
 from tkinter import filedialog as fd
-
+from tkinter import ttk
+from showinfo import ShowInfo
 class Mainwin(tk.Tk):
     def __init__(self):
         super().__init__()
@@ -17,7 +18,7 @@ class Mainwin(tk.Tk):
             #Пользователь выбирает торрент файл
             target_file = fd.askopenfile(filetypes =[('Torrent Files', '*.torrent')]) 
             if target_file is not None:
-                self.show_info_ab_file(target_file)
+                self.show_info_ab_file(target_file.name)
 
 
         #Инициализация панели инструментов (Open|Edit|View)
@@ -37,7 +38,9 @@ class Mainwin(tk.Tk):
 
         #Бинд на экран
         self.config(menu=main_menu)
-    
+    def show_info_ab_file(self,file_name):
+        show = ShowInfo(file_name,self.winfo_screenwidth(),self.winfo_screenheight())
+        show.mainloop()
 
         
 
