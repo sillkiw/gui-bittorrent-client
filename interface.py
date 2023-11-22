@@ -1,28 +1,30 @@
 import tkinter as tk
 from tkinter import filedialog as fd
 from tkinter import ttk
-from showinfo import ShowInfo
-class Mainwin(tk.Tk):
-    def __init__(self):
+from showinfo import TorrFile_InfoWindow
+class HeadWindow(tk.Tk): #главное окно
+    def __init__(head):
         super().__init__()
-        self.title('CrTorrent')
-        self.geometry(f"{self.winfo_screenwidth()}x{self.winfo_screenheight()}")
+        head.title('PirTorrent')
+        head.head_width = head.winfo_screenwidth()   #ширина главного окна
+        head.head_height = head.winfo_screenheight() #высота главного окна
+        head.geometry(f"{head.head_width}x{head.head_height}")
         
-        self.set_tool_bar()
+        head.set_tool_bar() #Установка панели инструментов
 
-    #Создания панели инструментов(Open|Edit|View)
-    def set_tool_bar(self):
+    #Функция создания панели инструментов(Open|Edit|View)
+    def set_tool_bar(head):
        
         #Функция открытия файловой системы и выбора файла
         def open_file_system(): 
             #Пользователь выбирает торрент файл
             target_file = fd.askopenfile(filetypes =[('Torrent Files', '*.torrent')]) 
             if target_file is not None:
-                self.show_info_ab_file(target_file.name)
+                head.show_info_ab_file(target_file.name)
 
 
         #Инициализация панели инструментов (Open|Edit|View)
-        main_menu = tk.Menu(self) 
+        main_menu = tk.Menu(head) 
 
         #Всплывающее окно для File
         file_menu = tk.Menu(tearoff=0)
@@ -36,14 +38,19 @@ class Mainwin(tk.Tk):
         main_menu.add_cascade(label="Edit")
         main_menu.add_cascade(label="View")
 
-        #Бинд на экран
-        self.config(menu=main_menu)
-    def show_info_ab_file(self,file_name):
-        show = ShowInfo(file_name,self.winfo_screenwidth(),self.winfo_screenheight())
+        #Бинд на главное окно
+        head.config(menu=main_menu)
+   
+    #Функция для вызова окна обзорщика файла
+    #@param file_name - путь до файла выбранного пользователем
+    def show_info_ab_file(head,file_path):
+        #Jткрытия окна обзорщика файловой системы торрент файла
+        show = TorrFile_InfoWindow(file_path,head.head_width,head.head_height) 
+      
         show.mainloop()
 
         
 
 if __name__ == "__main__":
-    window = Mainwin()
+    window = HeadWindow()
     window.mainloop()
