@@ -23,22 +23,28 @@ class TorrFile_InfoWindow(tk.Toplevel):
          info.info_font = font.Font(family= "Segoe UI", size=10) 
          info.style_button = ttk.Style()
          info.style_button.configure('TButton', anchor=tk.W,font = info.info_font)
-        
+         
+         
         #Графа для изменения торрент-файла
-         tk.Label(info,text="Torrent sourse:",font=info.info_font).pack()
+         info.source_frame = tk.Frame(info)
+         info.source_frame.pack(fill=tk.X)
+         tk.Label(info.source_frame,text="Torrent sourse:",font=info.info_font).pack(side="left",anchor="w",padx = 20,pady=20)
         #Кнопка для изменения торрент-файла в окне обзорщика торрента
          info.source_photo = tk.PhotoImage(file=r"images/icon.png")
-         info.source_photo = info.source_photo.subsample(3,2)
-         info.source_button = ttk.Button(info,text = info.file_name,width = info.info_width//10,image=info.source_photo,compound="left",style="TButton",command=info.change_torrent)
-         info.source_button.pack()
+         info.source_photo = info.source_photo.subsample(3,3)
+         info.source_button = ttk.Button(info.source_frame,text = info.file_name,width = info.info_width//13,image=info.source_photo,compound="left",style="TButton",command=info.change_torrent)
+         info.source_button.pack(anchor="sw",pady=20)
+
         
         #Графа для выбора файла, в которой будет помещен торрент
-         tk.Label(info,text="Destination:",font=info.info_font).pack()
+         info.file_frame = tk.Frame(info)
+         info.file_frame.pack(fill=tk.X)
+         tk.Label(info.file_frame,text="Destination:",font=info.info_font).pack(side="left",anchor="w",padx = 20)
         #Кнопка
          info.file_photo = tk.PhotoImage(file=r"images/file_icon.png")
-         info.file_photo = info.file_photo.subsample(5,6)
-         info.file_button = ttk.Button(info,text = info.file_path,width = info.info_width//9,image=info.file_photo,compound="left",style="TButton",command=info.change_torrent)
-         info.file_button.pack()
+         info.file_photo = info.file_photo.subsample(5,8)
+         info.file_button = ttk.Button(info.file_frame,text = info.file_path,width = info.info_width//13,image=info.file_photo,compound="left",style="TButton",command=info.change_torrent)
+         info.file_button.pack(anchor="sw",padx=20)
     def change_torrent(info):
         target_file = fd.askopenfile(parent = info,initialdir=info.file_path,filetypes =[('Torrent Files', '*.torrent')]) 
         info.file_path = target_file.name
