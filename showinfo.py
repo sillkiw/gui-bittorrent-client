@@ -2,13 +2,14 @@ import tkinter as tk
 from tkinter import ttk
 from tkinter import filedialog as fd
 from tkinter import font
-from torrent import Torrent
+
 class TorrFile_InfoWindow(tk.Toplevel):
     #Окно обзорщика торрент файла
     def __init__(info,file_path,head_width,head_height):
          super().__init__()
          
          info.title("Torrent File System ")
+         info.iconbitmap("images/icon.ico")
 
          info.info_width = head_width // 3 #Ширина окна
          info.info_height = head_height // 2 #Высота окна
