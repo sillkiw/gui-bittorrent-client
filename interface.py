@@ -6,11 +6,12 @@ class HeadWindow(tk.Tk): #главное окно
     def __init__(head):
         super().__init__()
         head.title('PirTorrent')
-        head.iconbitmap("images/icon.ico")
-
+        
         head.head_width = head.winfo_screenwidth()   #ширина главного окна
         head.head_height = head.winfo_screenheight() #высота главного окна
         head.geometry(f"{head.head_width}x{head.head_height}")
+        
+        head.iconbitmap("images/icon.ico")
         
 
         head.set_tool_bar() #Установка панели инструментов
