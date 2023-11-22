@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import ttk
 from tkinter import filedialog as fd
 from tkinter import font
+from torrent import Torrent
 
 class TorrFile_InfoWindow(tk.Toplevel):
     #Окно обзорщика торрент файла
@@ -38,8 +39,7 @@ class TorrFile_InfoWindow(tk.Toplevel):
          info.source_button = ttk.Button(info.source_frame,text = info.torrent_name,width = info.info_width//13,image=info.source_photo,compound="left",style="TButton",command=info.change_torrent)
          info.source_button.pack(anchor="sw",pady=20,ipadx=1)
          
-         
-        
+
         #Графа для выбора файла, в которой будет помещен торрент
          info.file_frame = tk.Frame(info)
          info.file_frame.pack(fill=tk.X)
@@ -49,12 +49,17 @@ class TorrFile_InfoWindow(tk.Toplevel):
          info.file_photo = info.file_photo.subsample(5,8)
          info.file_button = ttk.Button(info.file_frame,text = info.file_dir,width = info.info_width//13,image=info.file_photo,compound="left",style="TButton",command=info.change_destination)
          info.file_button.pack(anchor="sw",padx=20)
+
+
         #Файловая система
          info.file_system = ttk.Treeview(info,show="headings")
          info.set_file_system()
          info.file_system.pack(pady = 20) 
+
+
         #Открытия торрент-файла и чтение метафайла
-        
+         info.op_torrent = Torrent(info.file_path)
+         info.fill_the_table()
         
 
     #Изменение торрента
@@ -63,6 +68,8 @@ class TorrFile_InfoWindow(tk.Toplevel):
         info.file_path = target_file.name
         info.torrent_name = info.file_path.split("/")[-1]
         info.source_button.config(text = info.torrent_name)
+        info.op_torrent = Torrent(info.file_path)
+        info.fill_the_table()
     #Изменение места расположения будущего файла
     def change_destination(info):
         target_destination = fd.askdirectory(parent=info,initialdir=info.file_dir)
@@ -81,8 +88,11 @@ class TorrFile_InfoWindow(tk.Toplevel):
         info.file_system.heading("File",text="File",anchor="w")
         info.file_system.heading("Type",text="Type",anchor="w")
         info.file_system.heading("Size",text="Size",anchor="w")
+    def fill_the_table(info):
+        info.op_torrent.open_and_read_Metafile()
     
-        
+
+#Вспомогательная функция вне класса 
 def take_destination_part(path):
     parts = path.split("/")
     parts.pop(-1)
