@@ -53,7 +53,8 @@ class TorrFile_InfoWindow(tk.Toplevel):
          info.set_file_system()
          info.file_system.pack(pady = 20) 
         #Открытия торрент-файла и чтение метафайла
-         info.open_torrent = Torrent()
+        
+        
 
     #Изменение торрента
     def change_torrent(info):
