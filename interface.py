@@ -10,6 +10,7 @@ class HeadWindow(tk.Tk): #главное окно
         head.head_height = head.winfo_screenheight() #высота главного окна
         head.geometry(f"{head.head_width}x{head.head_height}")
         
+        
         head.set_tool_bar() #Установка панели инструментов
 
     #Функция создания панели инструментов(Open|Edit|View)
