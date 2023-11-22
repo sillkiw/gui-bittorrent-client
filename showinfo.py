@@ -28,16 +28,17 @@ class TorrFile_InfoWindow(tk.Toplevel):
          tk.Label(info,text="Torrent sourse:",font=info.info_font).pack()
         #Кнопка для изменения торрент-файла в окне обзорщика торрента
          info.source_photo = tk.PhotoImage(file=r"images/icon.png")
-         info.source_photo = info.source_photo.subsample(2,2)
-         info.source_button = ttk.Button(info,text = info.file_name,width = info.info_width//20,image=info.source_photo,compound="left",style="TButton",command=info.change_torrent)
+         info.source_photo = info.source_photo.subsample(3,2)
+         info.source_button = ttk.Button(info,text = info.file_name,width = info.info_width//10,image=info.source_photo,compound="left",style="TButton",command=info.change_torrent)
          info.source_button.pack()
         
         #Графа для выбора файла, в которой будет помещен торрент
          tk.Label(info,text="Destination:",font=info.info_font).pack()
         #Кнопка
-         info.file_photo = tk.PhotoImage(file=r"images/")
-
-
+         info.file_photo = tk.PhotoImage(file=r"images/file_icon.png")
+         info.file_photo = info.file_photo.subsample(5,6)
+         info.file_button = ttk.Button(info,text = info.file_path,width = info.info_width//9,image=info.file_photo,compound="left",style="TButton",command=info.change_torrent)
+         info.file_button.pack()
     def change_torrent(info):
         target_file = fd.askopenfile(parent = info,initialdir=info.file_path,filetypes =[('Torrent Files', '*.torrent')]) 
         info.file_path = target_file.name
