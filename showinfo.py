@@ -3,19 +3,21 @@ from tkinter import ttk
 from tkinter import filedialog as fd
 from tkinter import font
 from torrent import Torrent
-import math
 from hurry.filesize import size
 from hurry.filesize import alternative
-class TorrFile_InfoWindow(tk.Toplevel):
+class InfoWindow(tk.Toplevel):
+    STILL_THINKING = 0
+    T_CLOSED = -1
+    T_OPENED = 1
     #Окно обзорщика торрент файла
-    def __init__(info,file_path,head_width,head_height):
-         super().__init__()
+    def __init__(info,head,file_path,head_width,head_height):
+         super().__init__(head)
          
          info.title("Torrent File System ")
          info.iconbitmap("images/icon.ico")
-
+         
          info.info_width = head_width // 3 #Ширина окна
-         info.info_height = head_height // 2 #Высота окна
+         info.info_height = head_height //2 #Высота окна
 
         #Центрирование по центру главного окна(head)
          info.geometry(f"{info.info_width}x{info.info_height}+{(head_width-info.info_width)//2}+{(head_height-info.info_height)//2}")
@@ -55,24 +57,38 @@ class TorrFile_InfoWindow(tk.Toplevel):
          info.file_system = ttk.Treeview(info,show="headings")
          info.set_file_system()
         #Открытия торрент-файла и чтение метафайла
-         info.op_torrent = Torrent(info.file_path)
+         info.opened_torrent = Torrent(info.file_path)
          info.fill_the_table()
 
          info.file_system.pack(pady = 20) 
          
         #Ответ пользователя
-       
-       
-         info.button_Open =  ttk.Button(info,text = "Open",width = info.info_width//49)
-         info.button_Open.pack()
+         info.state_of_answer = InfoWindow.STILL_THINKING
 
+         info.answer_frame = tk.Frame(info)
+         info.answer_frame.pack(fill=tk.X)
+         info.button_Close = ttk.Button(info.answer_frame,text = "Close",width = info.info_width//40,command = info.close_window)
+         info.button_Close.pack(side = tk.RIGHT,anchor="ce",pady=20,padx=27)
+         info.button_Open =  ttk.Button(info.answer_frame,text = "Open",width = info.info_width//40,command = info.mark_torrent_open)
+         info.button_Open.pack(anchor="e",pady=20)
+        
+       
+     
+    def close_window(info):
+        info.state_of_answer = InfoWindow.T_CLOSED
+        
+        info.destroy()
+    def mark_torrent_open(info):
+        info.state_of_answer = InfoWindow.T_OPENED
+        info.destroy()
+    
     #Изменение торрента
     def change_torrent(info):
         target_file = fd.askopenfile(parent = info,initialdir=info.file_dir,filetypes =[('Torrent Files', '*.torrent')]) 
         info.file_path = target_file.name
         info.torrent_name = info.file_path.split("/")[-1]
         info.source_button.config(text = info.torrent_name)
-        info.op_torrent = Torrent(info.file_path)
+        info.opened_torrent = Torrent(info.file_path)
         
         for file in info.file_system.get_children():
             info.file_system.delete(file)
@@ -101,11 +117,12 @@ class TorrFile_InfoWindow(tk.Toplevel):
     def fill_the_table(info):
     
             
-        tor = info.op_torrent
+        tor = info.opened_torrent
         tor.read_Metafile()
 
         if tor.kind_file == Torrent.SINGLE_FILE:
             n_ame,t_ype = dividePrefix(tor.info['name'],".")
+            t_ype="."+t_ype
             s_ize = size(tor.info['length'],system=alternative)
             info.file_system.insert(parent="",index = "end",iid=0,values = (n_ame,t_ype,s_ize))
     
@@ -114,6 +131,6 @@ class TorrFile_InfoWindow(tk.Toplevel):
 #Вспомогательная функция вне класса 
 def dividePrefix(path,sym):
     parts  = path.split(sym)
-    last_part = "."+parts.pop(-1)
+    last_part = parts.pop(-1)
     prefix_part =  sym.join(parts)
     return prefix_part,last_part
