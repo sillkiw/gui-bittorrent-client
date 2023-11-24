@@ -71,15 +71,18 @@ class InfoWindow(tk.Toplevel):
          info.button_Close.pack(side = tk.RIGHT,anchor="ce",pady=20,padx=27)
          info.button_Open =  ttk.Button(info.answer_frame,text = "Open",width = info.info_width//40,command = info.mark_torrent_open)
          info.button_Open.pack(anchor="e",pady=20)
-        
+         
+         info.grab_set()
+     
        
      
     def close_window(info):
         info.state_of_answer = InfoWindow.T_CLOSED
-        
+        info.grab_release()
         info.destroy()
     def mark_torrent_open(info):
         info.state_of_answer = InfoWindow.T_OPENED
+        info.grab_release()
         info.destroy()
     
     #Изменение торрента
@@ -121,10 +124,10 @@ class InfoWindow(tk.Toplevel):
         tor.read_Metafile()
 
         if tor.kind_file == Torrent.SINGLE_FILE:
-            n_ame,t_ype = dividePrefix(tor.info['name'],".")
-            t_ype="."+t_ype
-            s_ize = size(tor.info['length'],system=alternative)
-            info.file_system.insert(parent="",index = "end",iid=0,values = (n_ame,t_ype,s_ize))
+            info.n_ame,info.t_ype = dividePrefix(tor.info['name'],".")
+            info.t_ype="."+info.t_ype
+            info.s_ize = size(tor.info['length'],system=alternative)
+            info.file_system.insert(parent="",index = "end",iid=0,values = (info.n_ame,info.t_ype,info.s_ize))
     
 
 
