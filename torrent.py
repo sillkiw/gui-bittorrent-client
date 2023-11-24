@@ -2,6 +2,7 @@ import bencode as ben   #Библиотека для бенкодировани�
 import hashlib as hash
 import random
 import requests as rq
+import ipaddress as ip
 class Torrent:
     SINGLE_FILE = 1
     MULTIPLE_FILE = 0
@@ -33,12 +34,18 @@ class Torrent:
             'port' : 6889,
             'uploaded' : 0,
             'downloaded' : 0,
-            'left' : 0,
+            'left' : tr.length,
             'event' : 'started'
 
         }
     def make_request_GET(tr):
         tr.tracker_response = rq.get(tr.announce,params = tr.params)
-
+        print(tr.tracker_response.content)
+        print(tr.tracker_response.request)
+        a = ben.bdecode(tr.tracker_response.content)
+        wor = a['peers']
+        print(wor[0])
+        print(len(wor))
+        
            
            
