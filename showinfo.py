@@ -17,7 +17,7 @@ class InfoWindow(tk.Toplevel):
          info.iconbitmap("images/icon.ico")
          
          info.info_width = head_width // 3 #Ширина окна
-         info.info_height = head_height //2 #Высота окна
+         info.info_height = head_height // 2  + head_height//30 #Высота окна
 
         #Центрирование по центру главного окна(head)
          info.geometry(f"{info.info_width}x{info.info_height}+{(head_width-info.info_width)//2}+{(head_height-info.info_height)//2}")
@@ -60,7 +60,7 @@ class InfoWindow(tk.Toplevel):
          info.opened_torrent = Torrent(info.file_path)
          info.fill_the_table()
 
-         info.file_system.pack(pady = 20) 
+         info.file_system.pack(pady = 10) 
          
         #Ответ пользователя
          info.state_of_answer = InfoWindow.STILL_THINKING
@@ -68,9 +68,9 @@ class InfoWindow(tk.Toplevel):
          info.answer_frame = tk.Frame(info)
          info.answer_frame.pack(fill=tk.X)
          info.button_Close = ttk.Button(info.answer_frame,text = "Close",width = info.info_width//40,command = info.close_window)
-         info.button_Close.pack(side = tk.RIGHT,anchor="ce",pady=20,padx=27)
+         info.button_Close.pack(side = tk.RIGHT,anchor="ce",padx=27)
          info.button_Open =  ttk.Button(info.answer_frame,text = "Open",width = info.info_width//40,command = info.mark_torrent_open)
-         info.button_Open.pack(anchor="e",pady=20)
+         info.button_Open.pack(anchor="e")
          
          info.grab_set()
      
