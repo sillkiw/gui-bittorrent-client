@@ -57,12 +57,13 @@ class Torrent:
         tr.make_clean()
         print(tr.ls)
         tr.handshake = b"\x13Bittorent Protocol\0\0\0\0\0\0\0\0"+tr.info_hash+tr.peer_id
-        tr.sock = socket.create_connection((tr.ls[0][0],tr.ls[0][1]),timeout=2)
+        print(len(tr.h))
+        tr.sock = socket.create_connection((tr.ls[1][0],tr.ls[1][1]),timeout=2)
         tr.sock.send(tr.handshake)
-        tr.sock.setblocking(False)
         
-        tr.sock2 = socket.socket()
-
+        buff = tr.sock.recv(len(tr.handshake))
+        
+       
 
     def make_clean(tr):
           tr.ls = []
