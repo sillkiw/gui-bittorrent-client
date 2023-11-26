@@ -47,6 +47,7 @@ class Torrent:
 
         }
     def make_request_GET(tr):
+
         tr.tracker_response = rq.get(tr.announce,params = tr.params)
     def connect_with_peer(tr):
       
@@ -56,10 +57,12 @@ class Torrent:
         tr.make_clean()
         print(tr.ls)
         tr.handshake = b"\x13Bittorent Protocol\0\0\0\0\0\0\0\0"+tr.info_hash+tr.peer_id
-        tr.sock = socket.create_connection((tr.ls[2][0],tr.ls[2][1]))
+        tr.sock = socket.create_connection((tr.ls[0][0],tr.ls[0][1]),timeout=2)
+        tr.sock.send(tr.handshake)
+        tr.sock.setblocking(False)
         
-      
-        
+        tr.sock2 = socket.socket()
+
 
     def make_clean(tr):
           tr.ls = []
