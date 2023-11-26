@@ -88,13 +88,13 @@ class HeadWindow(tk.Tk): #главное окно
     def check_user_action(head):
         head.wait_window(head.torrent_show)
         if head.torrent_show.state_of_answer == InfoWindow.T_OPENED:
-            head.torrent_name = head.torrent_show.n_ame
-            head.torrent_size = head.torrent_show.s_ize
+            head.torrent_name = head.torrent_show.torrent_name
+            head.torrent_size = 0
             head.torrent = head.torrent_show.opened_torrent
             head.torrent.make_request_GET()
             head.viewer.insert(parent="",index="end",values=(head.torrent_name,head.torrent_size,head.torrent.tracker_response.status_code,0,0,0,0,0))
             #info.file_system.insert(parent="",index = "end",iid=0,values = (n_ame,t_ype,s_ize))
-   
+            head.torrent.connect_with_peer()
         
   
 
