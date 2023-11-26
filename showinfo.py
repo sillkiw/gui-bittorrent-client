@@ -128,7 +128,7 @@ class InfoWindow(tk.Toplevel):
             info.t_ype="."+info.t_ype
             info.s_ize = size(tor.info['length'],system=alternative)
             info.file_system.insert(parent="",index = "end",iid=0,values = (info.n_ame,info.t_ype,info.s_ize))
-    
+           
 
 
 #Вспомогательная функция вне класса 
