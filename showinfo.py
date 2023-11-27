@@ -10,21 +10,21 @@ class InfoWindow(tk.Toplevel):
     T_CLOSED = -1
     T_OPENED = 1
     #Окно обзорщика торрент файла
-    def __init__(info,head,file_path,head_width,head_height):
+    def __init__(info,head):
          super().__init__(head)
          
          info.title("Torrent File System ")
          info.iconbitmap("images/icon.ico")
          
-         info.info_width = head_width // 3 #Ширина окна
-         info.info_height = head_height // 2  + head_height//30 #Высота окна
+         info.info_width = head.head_width // 3 #Ширина окна
+         info.info_height = head.head_height // 2  + head.head_height//30 #Высота окна
 
         #Центрирование по центру главного окна(head)
-         info.geometry(f"{info.info_width}x{info.info_height}+{(head_width-info.info_width)//2}+{(head_height-info.info_height)//2}")
+         info.geometry(f"{info.info_width}x{info.info_height}+{(head.head_width-info.info_width)//2}+{(head.head_height-info.info_height)//2}")
        
         #Путь до файла выбранного пользователя 
-         info.file_path = file_path
-         info.file_dir,info.torrent_name = dividePrefix(file_path,"/")
+         info.file_path = head.target_file.name
+         info.file_dir,info.torrent_name = dividePrefix(info.file_path,"/")
         #Стиль для кнопки и шрифта
          info.info_font = font.Font(family= "Segoe UI", size=10) 
          info.style_button = ttk.Style()
@@ -57,7 +57,7 @@ class InfoWindow(tk.Toplevel):
          info.file_system = ttk.Treeview(info,show="headings")
          info.set_file_system()
         #Открытия торрент-файла и чтение метафайла
-         info.opened_torrent = Torrent(info.file_path)
+         info.torrent = Torrent(info.file_path,info.torrent_name)
          info.fill_the_table()
 
          info.file_system.pack(pady = 10) 
@@ -80,6 +80,8 @@ class InfoWindow(tk.Toplevel):
         info.state_of_answer = InfoWindow.T_CLOSED
         info.grab_release()
         info.destroy()
+
+
     def mark_torrent_open(info):
         info.state_of_answer = InfoWindow.T_OPENED
         info.grab_release()
@@ -91,18 +93,22 @@ class InfoWindow(tk.Toplevel):
         info.file_path = target_file.name
         info.torrent_name = info.file_path.split("/")[-1]
         info.source_button.config(text = info.torrent_name)
-        info.opened_torrent = Torrent(info.file_path)
+        info.torrent = Torrent(info.file_path,info.torrent_name)
         
         for file in info.file_system.get_children():
             info.file_system.delete(file)
 
         
         info.fill_the_table()
+
+
     #Изменение места расположения будущего файла
     def change_destination(info):
         target_destination = fd.askdirectory(parent=info,initialdir=info.file_dir)
         info.file_dir = target_destination
         info.file_button.config(text=info.file_dir)
+
+
     #Установка столбцов для файловой системы
     def set_file_system(info):
         info.file_system['columns'] = ("File","Type","Size")
@@ -117,18 +123,14 @@ class InfoWindow(tk.Toplevel):
         info.file_system.heading("Type",text="Type",anchor="w")
         info.file_system.heading("Size",text="Size",anchor="w")
     
-    def fill_the_table(info):
-    
-            
-        tor = info.opened_torrent
-        tor.read_Metafile()
-
-        if tor.kind_file == Torrent.SINGLE_FILE:
-            info.n_ame,info.t_ype = dividePrefix(tor.info['name'],".")
+    def fill_the_table(info):  
+        info.torrent.read_Metafile()
+        if  info.torrent.kind_file == Torrent.SINGLE_FILE:
+            info.n_ame,info.t_ype = dividePrefix(info.torrent.info['name'],".")
             info.t_ype="."+info.t_ype
-            info.s_ize = size(tor.info['length'],system=alternative)
+            info.s_ize = size(info.torrent.info['length'],system=alternative)
             info.file_system.insert(parent="",index = "end",iid=0,values = (info.n_ame,info.t_ype,info.s_ize))
-           
+
 
 
 #Вспомогательная функция вне класса 
