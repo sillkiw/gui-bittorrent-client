@@ -2,7 +2,7 @@ import logging
 class PeerManager:
     def __init__(pmg,tracker):
         pmg.tracker = tracker
-        peers = []
+        pmg.peers = []
     def add_peers(pmg):
         for peer in pmg.tracker.connected_peers:
             if pmg.handshake(peer):
