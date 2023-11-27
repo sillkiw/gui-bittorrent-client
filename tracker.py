@@ -4,6 +4,7 @@ import requests as req
 import ipaddress as ipform
 import struct
 from random import randint
+import socket
 from tkinter import messagebox
 from peer import Peer
 class Tracker:
@@ -41,7 +42,7 @@ class Tracker:
              position = 0
              for _ in range(track.amount_of_peers):
                 peer_ip = struct.unpack_from("!i", track.packed_peers,offset=position)[0]
-                peer_ip = ipform.IPv4Address(struct.pack("!i",peer_ip))
+                peer_ip = socket.inet_ntoa(struct.pack("!i",peer_ip))
                 
                 position += 4
                 peer_port = struct.unpack_from("!H",track.packed_peers,position)[0]
