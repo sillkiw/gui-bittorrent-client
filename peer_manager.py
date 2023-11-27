@@ -13,7 +13,7 @@ class PeerManager:
         try:
             handshake_message = pmg.tracker.HANDSHAKE
             peer.sent_message(handshake_message)
-            logging.info(f"new peer {peer.ip}")
+            print(f"new peer {peer.ip}")
             return True
         except Exception as e:
-            logging.error(f"Handshake error with {peer.ip}")
+            print(f"Handshake error with {peer.ip}")
