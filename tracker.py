@@ -51,7 +51,7 @@ class Tracker:
                 track.list_of_peers.append(Peer(peer_ip,peer_port))
         
         def connect_with_peers(track):
-            
+            print(len(track.list_of_peers))
             for peer in track.list_of_peers:
                 if not peer.connect():
                     continue
