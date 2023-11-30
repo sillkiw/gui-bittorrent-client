@@ -1,4 +1,4 @@
-import logging
+import multiprocessing
 class PeerManager:
     def __init__(pmg,tracker):
         pmg.tracker = tracker
@@ -8,7 +8,7 @@ class PeerManager:
             if pmg.handshake(peer):
                 pmg.peers.append(peer)
             else:
-                logging.error(f"Can't handshake with {peer.id}")
+                print(f"Can't handshake with {peer.id}")
     def handshake(pmg,peer):
         try:
             handshake_message = pmg.tracker.HANDSHAKE
