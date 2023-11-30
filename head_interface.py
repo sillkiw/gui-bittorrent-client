@@ -4,6 +4,7 @@ from tkinter import ttk
 from showinfo import InfoWindow
 from tracker import Tracker
 from peer_manager import PeerManager
+import multiprocessing
 class HeadWindow(tk.Tk): #главное окно
     HAS_DOWNLOAD = True
     HAS_NOT_DOWNLOAD = False
@@ -116,6 +117,8 @@ class HeadWindow(tk.Tk): #главное окно
         head.tracker.get_list_of_peers()
         head.tracker.connect_with_peers()
         head.tracker.make_messages()
+
+
     def initialize_peer_manager(head):
         head.peer_manager = PeerManager(head.tracker)
         head.peer_manager.add_peers()       
