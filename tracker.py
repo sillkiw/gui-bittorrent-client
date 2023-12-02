@@ -1,13 +1,12 @@
 import hashlib as hash
 import bencode as ben
 import requests as req
-import ipaddress as ipform
-import struct
 from random import randint
-import socket
 from tkinter import messagebox
 from peer import Peer
-class Tracker:
+import struct,socket,time
+import multiprocessing
+class Tracker(multiprocessing):      
         def __init__(track,torrent_file):
             track.url = torrent_file.announce
             track.info_hash = hash.sha1(ben.bencode(torrent_file.info)).digest()
@@ -17,6 +16,7 @@ class Tracker:
             track.amount_downloaded = 0
             track.left = torrent_file.length
             track.connected_peers = []
+
         def connect_with_tracker(track):
             track.parametrs = { #параметры для верного подключения
                 'info_hash' : track.info_hash,
@@ -30,8 +30,22 @@ class Tracker:
             try:
                 track.response = req.get(track.url,track.parametrs)
                 track.response = ben.bdecode(track.response.content)
+                track.packed_peers = track.response['peers']
+                track.interval = track.response['interval']
+                track.connect_with_peers()
             except Exception:
                  messagebox.showerror("Can't connect with a tracker")
+                 
+        def connect_with_peers(track):
+            track.get_list_of_peers()
+
+            for peer in track.list_of_peers:
+                if not peer.connect():
+                    continue
+                print(f"CONNECTED WITH {peer.ip}")
+                track.connected_peers.append(peer)   
+            print(track.connected_peers)
+
         def get_list_of_peers(track):
             track.packed_peers = track.response['peers']
             track.amount_of_peers = len(track.packed_peers) // 6
@@ -51,13 +65,6 @@ class Tracker:
                 
                 track.list_of_peers.append(Peer(peer_ip,peer_port))
         
-        def connect_with_peers(track):
-            print(len(track.list_of_peers))
-            for peer in track.list_of_peers:
-                if not peer.connect():
-                    continue
-                print(f"CONNECTED WITH {peer.ip}")
-                track.connected_peers.append(peer)   
-            print(track.connected_peers)
+      
         def make_messages(track):
             track.HANDSHAKE = b"\x13Bittorent protocol"+track.info_hash+track.peer_id        
