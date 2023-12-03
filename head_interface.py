@@ -2,9 +2,8 @@ import tkinter as tk
 from tkinter import filedialog as fd
 from tkinter import ttk
 from showinfo import InfoWindow
-from tracker import Tracker
-from peer_manager import PeerManager
 import multiprocessing
+
 class HeadWindow(tk.Tk): #главное окно
     HAS_DOWNLOAD = True
     HAS_NOT_DOWNLOAD = False
@@ -97,13 +96,19 @@ class HeadWindow(tk.Tk): #главное окно
 
     def check_user_action(head):
         head.wait_window(head.torrent_show)
-        if head.torrent_show.state_of_answer == InfoWindow.T_OPENED:
+        if head.torrent_show.state_of_answer == InfoWindow._States.T_OPENED:
+            
+            
+            """
             head.torrent = head.torrent_show.torrent
             head.viewer.insert(parent="",index="end",values=(head.torrent.name,0,0,0,0,0,0,0))
             head.status = head.HAS_DOWNLOAD
             #info.file_system.insert(parent="",index = "end",iid=0,values = (n_ame,t_ype,s_ize))
-           
-        
+            """
+
+
+
+    """   
     def check_status(head):
         if head.status == head.HAS_DOWNLOAD:
             head.initialize_tracker()
@@ -122,7 +127,7 @@ class HeadWindow(tk.Tk): #главное окно
     def initialize_peer_manager(head):
         head.peer_manager = PeerManager(head.tracker)
         head.peer_manager.add_peers()       
-        
+    """    
 
 if __name__ == "__main__":
 
