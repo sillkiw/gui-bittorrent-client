@@ -9,7 +9,7 @@ class Tracker:
         def __init__(track,torrent_file):
             track.url = torrent_file.announce
             track.info_hash = hash.sha1(ben.bencode(torrent_file.info)).digest()
-            track.peer_id = b'-PR7070-'+bytes([randint(0,9) for _ in range(12)])
+            track.peer_id = b'-PR7070-'+bytes(time.time().hex())
             track.user_port = 6881
             track.amount_uploaded = 0
             track.amount_downloaded = 0
@@ -37,12 +37,13 @@ class Tracker:
                  
         def connect_with_peers(track):
             track.get_list_of_peers()
+            track.amount_of_peers = len(track.list_of_peers)
             for peer in track.list_of_peers:
                 if not peer.connect():
                     continue
                 print(f"CONNECTED WITH {peer.ip}")
                 track.connected_peers.append(peer)   
-            print(track.connected_peers)
+            track.amount_of_connected_peers = len(track.connected_peers)
 
         def get_list_of_peers(track):
             track.packed_peers = track.response['peers']
@@ -60,6 +61,4 @@ class Tracker:
                 position += 2
                 track.list_of_peers.append(Peer(peer_ip,peer_port))
         
-      
-        def make_messages(track):
-            track.HANDSHAKE = b"\x13Bittorent protocol"+track.info_hash+track.peer_id        
+ 
