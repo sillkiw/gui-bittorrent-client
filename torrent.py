@@ -7,11 +7,16 @@ import socket
 import struct
 
 class Torrent:
-    SINGLE_FILE = 1
-    MULTIPLE_FILE = 0
+
+    class _States:
+        def __init__(state) :        
+            state.SINGLE_FILE = 1
+            state.MULTIPLE_FILE = 0
+
     def __init__(tr,file_path,name):
         tr.torrent_path = file_path
         tr.name = name
+        
     def read_Metafile(tr) :
         with open(tr.torrent_path,"rb") as torrent_file:
             tr.metainfo = ben.bdecode(torrent_file.read())
@@ -24,14 +29,14 @@ class Torrent:
             tr.name = tr.info['name']
             if 'files' in tr.metainfo['info']:
                 tr.files = tr.info['files']
-                tr.kind_file = Torrent.MULTIPLE_FILE
+                tr.kind_file = Torrent._States.MULTIPLE_FILE
                 tr.length = 0
                 for file in tr.files:
                     tr.length += file['length']
             else:
                 tr.length = tr.info['length']
                 tr.piecies = tr.info['pieces'] #!!!
-                tr.kind_file = Torrent.SINGLE_FILE
+                tr.kind_file = Torrent._States.SINGLE_FILE
            
   
     
