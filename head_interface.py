@@ -3,7 +3,8 @@ from tkinter import filedialog as fd
 from tkinter import ttk
 from showinfo import winfoWindow
 from installation_manager import Installation_MNG
-import multiprocessing
+from multiprocessing import Pipe
+import threading
 class HeadWindow(tk.Tk): #главное окно
     def __init__(head):
         super().__init__()    
@@ -13,6 +14,7 @@ class HeadWindow(tk.Tk): #главное окно
         head.geometry(f"{head.head_width}x{head.head_height}")
         head.iconbitmap("images/icon.ico")
         #Установка просмотрщика установки
+        head.number_of_torrent = 0
         head.viewer = ttk.Treeview(head,show="headings")
         head.fill_viewer_collums()
         head.viewer.pack(fill=tk.BOTH,expand=1,pady=45)
@@ -50,20 +52,26 @@ class HeadWindow(tk.Tk): #главное окно
         if  head.target_file != None:
             head.torrent_show = winfoWindow(head) 
             head.check_user_action()
-
+            
+    def updater(head,id,r):
+        while True:
+            peer = str(r.recv())
+            print(peer)
+            head.viewer.item(id,text = "",values=(head.torrent.name,head.torrent_show.s_ize,"0%","Downloading...",peer,"?","?"))
     #Проверка ответа пользователя     
     def check_user_action(head):
+            
         #Ожидание ответа пользователя
         head.wait_window(head.torrent_show)
         if head.torrent_show.state_of_answer == winfoWindow._States_of_answer.T_OPENED:
-                head.torrent = head.torrent_show.torrent
-                head.tracker.connect_with_tracker()
+                head.torrent = head.torrent_show.torrent 
+                head.from_install,head.in_install = Pipe()
                 #Инициализация установочного менеджера
-                head.installation_mng = Installation_MNG(head.torrent)
+                head.installation_mng = Installation_MNG(head.torrent,head.in_install)
                 #Запуск нового потока
                 head.installation_mng.start()
-                head.viewer.insert(parent="",index = "end",values = (head.torrent.name,head.torrent_show.s_ize,"0%","Downloading...",f"({head.installation_mng.tracker.amount_of_peers})","None","None"))
-    
+                head.viewer.insert(parent="",index = "end",iid = head.number_of_torrent,values = (head.torrent.name,head.torrent_show.s_ize,"0%","Downloading...","?","?","?"))
+                threading.Thread(target=head.updater,args=(head.number_of_torrent,head.from_install)).start()
     #Обзорщик установок
     def fill_viewer_collums(head):
         head.viewer['columns'] = ("Name","Size","Progress","Status","Peers","Speed","Ratio")
