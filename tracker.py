@@ -9,7 +9,7 @@ class Tracker:
         def __init__(track,torrent_file):
             track.url = torrent_file.announce
             track.info_hash = hash.sha1(ben.bencode(torrent_file.info)).digest()
-            track.peer_id = b'-PR7070-'+bytes(time.time().hex())
+            track.peer_id = b'-PR7070-'+bytes([randint(0,9) for _ in range(12)])
             track.user_port = 6881
             track.amount_uploaded = 0
             track.amount_downloaded = 0
