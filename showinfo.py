@@ -6,9 +6,11 @@ from torrent import Torrent
 from hurry.filesize import size
 from hurry.filesize import alternative
 class InfoWindow(tk.Toplevel):
-    STILL_THINKING = 0
-    T_CLOSED = -1
-    T_OPENED = 1
+    class _States:
+        def __init__(state):
+            state.STILL_THINKING = 0
+            state.T_CLOSED = -1
+            state.T_OPENED = 1
     #Окно обзорщика торрент файла
     def __init__(info,head):
          super().__init__(head)
@@ -63,7 +65,7 @@ class InfoWindow(tk.Toplevel):
          info.file_system.pack(pady = 10) 
          
         #Ответ пользователя
-         info.state_of_answer = InfoWindow.STILL_THINKING
+         info.state_of_answer = InfoWindow._States.STILL_THINKING
 
          info.answer_frame = tk.Frame(info)
          info.answer_frame.pack(fill=tk.X)
@@ -77,13 +79,13 @@ class InfoWindow(tk.Toplevel):
        
      
     def close_window(info):
-        info.state_of_answer = InfoWindow.T_CLOSED
+        info.state_of_answer = InfoWindow._States.T_CLOSED
         info.grab_release()
         info.destroy()
 
 
     def mark_torrent_open(info):
-        info.state_of_answer = InfoWindow.T_OPENED
+        info.state_of_answer = InfoWindow._States.T_OPENED
         info.grab_release()
         info.destroy()
     
