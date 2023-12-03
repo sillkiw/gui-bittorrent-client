@@ -5,8 +5,7 @@ from random import randint
 from tkinter import messagebox
 from peer import Peer
 import struct,socket,time
-import multiprocessing
-class Tracker(multiprocessing):      
+class Tracker:      
         def __init__(track,torrent_file):
             track.url = torrent_file.announce
             track.info_hash = hash.sha1(ben.bencode(torrent_file.info)).digest()
@@ -38,7 +37,6 @@ class Tracker(multiprocessing):
                  
         def connect_with_peers(track):
             track.get_list_of_peers()
-
             for peer in track.list_of_peers:
                 if not peer.connect():
                     continue
@@ -56,13 +54,10 @@ class Tracker(multiprocessing):
              position = 0
              for _ in range(track.amount_of_peers):
                 peer_ip = struct.unpack_from("!i", track.packed_peers,offset=position)[0]
-                peer_ip = socket.inet_ntoa(struct.pack("!i",peer_ip))
-                
+                peer_ip = socket.inet_ntoa(struct.pack("!i",peer_ip))     
                 position += 4
                 peer_port = struct.unpack_from("!H",track.packed_peers,position)[0]
-
                 position += 2
-                
                 track.list_of_peers.append(Peer(peer_ip,peer_port))
         
       
