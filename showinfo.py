@@ -112,9 +112,10 @@ class winfoWindow(tk.Toplevel):
         if  winfo.torrent.kind_file == Torrent._Kinds_of_file.SINGLE_FILE:
             winfo.n_ame,winfo.t_ype = dividePrefix(winfo.torrent.info['name'],".")
             winfo.t_ype="."+winfo.t_ype
-            winfo.s_ize = size(winfo.torrent.info['length'],system=alternative)
+            winfo.s_ize = size(winfo.torrent.length,system=alternative)
             winfo.file_system.insert(parent="",index = "end",iid=0,values = (winfo.n_ame,winfo.t_ype,winfo.s_ize))
-
+        elif winfo.torrent.kind_file == Torrent._Kinds_of_file.MULTIPLE_FILE:
+            winfo.s_ize = size(winfo.torrent.length,system=alternative)
 
 
 #Вспомогательная функция вне класса 
