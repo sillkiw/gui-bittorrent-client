@@ -13,6 +13,7 @@ class Installation_MNG(multiprocessing.Process):
     def run(imng):
         imng.initialize_tracker_connection()
         imng.channel.send(imng.tracker.amount_of_connected_peers)
+        
     def initialize_tracker_connection(imng):
         imng.tracker.connect_with_tracker()
         #Инициализация менеджера пиров
