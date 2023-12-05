@@ -1,36 +1,50 @@
 import bencode as ben   #Библиотека для бенкодирования(используется в метафайлах торрента)
+from hurry.filesize import size,alternative
 
-class Torrent:
+class Torrent: 
     #Типы файла
     class _Kinds_of_file:
         MULTIPLE_FILE,SINGLE_FILE = (0,1)
     
-
     def __init__(tr,file_path,name):
+        #Путь до торрента
         tr.torrent_path = file_path
+        #Имя торрента
         tr.name = name
-        
-    def read_Metafile(tr):
-        with open(tr.torrent_path,"rb") as torrent_file:
-            tr.metainfo = ben.bdecode(torrent_file.read())
-            tr.meta_keys = tr.metainfo.keys()
 
+    #Чтение метаданных с метафайла
+    def read_Metafile(tr):
+        #Открытие торрент-файла
+        with open(tr.torrent_path,"rb") as torrent_file:
+            #Чтение файла и декодирование бенкодинга
+            tr.metainfo = ben.bdecode(torrent_file.read())
+            #url-адресс трекера
             tr.announce = tr.metainfo['announce']
+            #info - информация о файлах торрента, частях и их размеров
             tr.info = tr.metainfo['info']
+            #piece length - размер одной части
             tr.piece_length = tr.info['piece length']
+            #pieces - части файлов / файла
             tr.pieces = tr.info['pieces']
-            tr.name = tr.info['name']
             if 'files' in tr.metainfo['info']:
+                #Имя главной папки
+                tr.name = tr.info['name']
                 tr.files = tr.info['files']
+                #Тип файловой системы
                 tr.kind_file = Torrent._Kinds_of_file.MULTIPLE_FILE
+                #Общий размер
                 tr.length = 0
                 for file in tr.files:
                     tr.length += file['length']
             else:
-                tr.length = tr.info['length']
-                tr.pieces = tr.info['pieces'] #!!!
+                #Имя единственного файла
+                tr.name = tr.info['name']
+                #Тип файловой системы
                 tr.kind_file = Torrent._Kinds_of_file.SINGLE_FILE
-           
+                #Размер файла
+                tr.length = tr.info['length']
+            #Представление размера файлов в красивом виде    
+            tr.size =  size(tr.length,system=alternative)
   
     
                     
