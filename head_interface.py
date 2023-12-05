@@ -52,7 +52,7 @@ class HeadWindow(tk.Tk): #главное окно
     #@param file_name - путь до файла выбранного пользователем
     def show_info_ab_file(head):
         #Jткрытия окна обзорщика файловой системы торрент файла
-        #(!)(!)Реализовать проверку на дурака(пользователь добавляет один и тот же торрент несколько раз)(проверять части)
+        # TODO: Реализовать проверку на дурака(пользователь добавляет один и тот же торрент несколько раз)(проверять части)
         if  head.target_torrent != None:
             head.torrent_show = winfoWindow(head) 
             head.check_user_action()
@@ -69,11 +69,10 @@ class HeadWindow(tk.Tk): #главное окно
                 head.initalize_installation()
     
     #Функция для потоков для обновления информации об установочном процессе 
-    def updater(head,id,from_install):
+    def updater(head,id,from_install,name,size):
         while True:
             peer = str(from_install.recv())
-            print(peer)
-            head.viewer.item(id,text = "",values=(head.torrent.name,head.torrent.s_ize,"0%","Downloading...",peer,"?","?"))
+            head.viewer.item(id,text = "",values=(name,size,"0%","Downloading...",peer,"?","?"))
     
     #Инициализация и начала установки
     def initalize_installation(head):
@@ -87,8 +86,8 @@ class HeadWindow(tk.Tk): #главное окно
         #Инициализация установочного менеджера
         Installation_MNG(torrent,to_head).start()
         #Запуск нового потока для обновления информации на экране
-        threading.Thread(target=head.updater,args=(head.number_of_torrent,from_install)).start()
-        #Увилечение счетчика 
+        threading.Thread(target=head.updater,args=(head.number_of_torrent,from_install,torrent.name,torrent.size)).start()
+        #Увеличение счетчика 
         head.number_of_torrent+=1
 
     #Обзорщик установок
