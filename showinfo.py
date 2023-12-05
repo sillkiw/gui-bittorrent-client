@@ -5,6 +5,7 @@ from tkinter import font
 from torrent import Torrent
 from hurry.filesize import size
 from hurry.filesize import alternative
+
 class winfoWindow(tk.Toplevel):
     #Состояния ответа пользователя
     class _States_of_answer:
@@ -14,13 +15,14 @@ class winfoWindow(tk.Toplevel):
          super().__init__(head)
          winfo.title("Torrent File System ")
          winfo.iconbitmap("images/icon.ico")
-         winfo.winfo_width = head.head_width // 3 #Ширина окна
-         winfo.winfo_height = head.head_height // 2  + head.head_height//30 #Высота окна
+        #Размеры всплывающего окна
+         winfo.winfo_width = head.head_width // 3 #Ширина всплывающего окна
+         winfo.winfo_height = head.head_height // 2  + head.head_height//25 #Высота всплывающего окна
         #Центрирование по центру главного окна(head)
          winfo.geometry(f"{winfo.winfo_width}x{winfo.winfo_height}+{(head.head_width-winfo.winfo_width)//2}+{(head.head_height-winfo.winfo_height)//2}")
-        #Путь до файла выбранного пользователя 
-         winfo.file_path = head.target_file.name
-         winfo.file_dir,winfo.torrent_name = dividePrefix(winfo.file_path,"/")
+        #Путь до торрент-файла выбранного пользователя 
+         winfo.torrent_path = head.target_torrent.name
+         winfo.direction,winfo.torrent_name = dividePrefix(winfo.torrent_path,"/")
         #Стиль для кнопки и шрифта
          winfo.winfo_font = font.Font(family= "Segoe UI", size=10) 
          winfo.style_button = ttk.Style()
@@ -34,66 +36,78 @@ class winfoWindow(tk.Toplevel):
          winfo.source_photo = winfo.source_photo.subsample(3,3)
          winfo.source_button = ttk.Button(winfo.source_frame,text = winfo.torrent_name,width = winfo.winfo_width//13,image=winfo.source_photo,compound="left",style="Heading.TButton",command=winfo.change_torrent)
          winfo.source_button.pack(anchor="sw",pady=20,ipadx=1)
-        #Графа для выбора файла, в которой будет помещен торрент
+        #Графа для выбора пути, в которой будет помещен скачанный торрент
          winfo.file_frame = tk.Frame(winfo)
          winfo.file_frame.pack(fill=tk.X)
          tk.Label(winfo.file_frame,text="Destination:",font=winfo.winfo_font).pack(side="left",anchor="w",padx = 20)
-        #Кнопка
+        #Кнопка для выбора пути, в которой будет помещен скачанный торрент
          winfo.file_photo = tk.PhotoImage(file=r"images/file_icon.png")
          winfo.file_photo = winfo.file_photo.subsample(5,8)
-         winfo.file_button = ttk.Button(winfo.file_frame,text = winfo.file_dir,width = winfo.winfo_width//13,image=winfo.file_photo,compound="left",style='Heading.TButton',command=winfo.change_destination)
+         winfo.file_button = ttk.Button(winfo.file_frame,text = winfo.direction,width = winfo.winfo_width//13,image=winfo.file_photo,compound="left",style='Heading.TButton',command=winfo.change_destination)
          winfo.file_button.pack(anchor="sw",padx=20)
-        #Файловая система
+        #Обзорщик файловой системы торрента
          winfo.file_system = ttk.Treeview(winfo,show="headings")
          winfo.set_file_system()
-        #Открытия торрент-файла и чтение метафайла
-         winfo.torrent = Torrent(winfo.file_path,winfo.torrent_name)
+        #Инициализация торрента в виде объкта
+         winfo.torrent = Torrent(winfo.torrent_path,winfo.torrent_name)
          winfo.fill_the_table()
          winfo.file_system.pack(pady = 10) 
-        #Ответ пользователя
+        #Пользователь еще ничего не нажал
          winfo.state_of_answer = winfoWindow._States_of_answer.U_THINKING
          winfo.answer_frame = tk.Frame(winfo)
          winfo.answer_frame.pack(fill=tk.X)
-         winfo.button_Close = ttk.Button(winfo.answer_frame,text = "Close",width = winfo.winfo_width//40,command = winfo.close_window)
+        #Кнопка закрытия 
+         winfo.button_Close = ttk.Button(winfo.answer_frame,text = "Close",width = winfo.winfo_width//40,command = winfo.close_pressed)
          winfo.button_Close.pack(side = tk.RIGHT,anchor="ce",padx=27)
-         winfo.button_Open =  ttk.Button(winfo.answer_frame,text = "Open",width = winfo.winfo_width//40,command = winfo.mark_torrent_open)
+        #Кнопка согласия на скачку торрента
+         winfo.button_Open =  ttk.Button(winfo.answer_frame,text = "Open",width = winfo.winfo_width//40,command = winfo.open_pressed)
          winfo.button_Open.pack(anchor="e")
+        #Запрет пользователю пользоваться главным окном
          winfo.grab_set()
      
        
-     
-    def close_window(winfo):
+    #Пользователь нажал Close
+    def close_pressed(winfo):
+        #Пользователь отказался от установки
         winfo.state_of_answer = winfoWindow._States_of_answer.T_CLOSED
+        #Закрытие окна
         winfo.grab_release()
         winfo.destroy()
 
-
-    def mark_torrent_open(winfo):
+    #Пользователь нажал Open
+    def open_pressed(winfo):
+        #Пользователь согласился на установку
         winfo.state_of_answer = winfoWindow._States_of_answer.T_OPENED
+        #Закрытие окна
         winfo.grab_release()
         winfo.destroy()
     
-    #Изменение торрента
+    #Изменение торрент-файла
     def change_torrent(winfo):
-        target_file = fd.askopenfile(parent = winfo,initialdir=winfo.file_dir,filetypes =[('Torrent Files', '*.torrent')]) 
-        winfo.file_path = target_file.name
-        winfo.torrent_name = winfo.file_path.split("/")[-1]
+        #Пользователь выбирает новый торрент
+        new_target_torrent = fd.askopenfile(parent = winfo,initialdir=winfo.direction,filetypes =[('Torrent Files', '*.torrent')]) 
+        #Изменение всех предыдущих значений
+        winfo.torrent_path = new_target_torrent.name
+        winfo.direction,winfo.torrent_name = winfo.torrent_path.split("/")
         winfo.source_button.config(text = winfo.torrent_name)
-        winfo.torrent = Torrent(winfo.file_path,winfo.torrent_name)
+        winfo.torrent = Torrent(winfo.torrent_path,winfo.torrent_name)
+        #Удаление файловой системы предыдущего торрента
         for file in winfo.file_system.get_children():
             winfo.file_system.delete(file)
-
+        #Установка файловой системы нового торрента
         winfo.fill_the_table()
 
 
     #Изменение места установки торрент-файла
     def change_destination(winfo):
-        target_destination = fd.askdirectory(parent=winfo,initialdir=winfo.file_dir)
-        winfo.file_dir = target_destination
-        winfo.file_button.config(text=winfo.file_dir)
+        #Пользователь выбирает новый путь
+        target_destination = fd.askdirectory(parent=winfo,initialdir=winfo.direction)
+        #Изменение предыдущих значений
+        winfo.direction = target_destination
+        winfo.file_button.config(text=winfo.direction)
 
 
-    #Установка столбцов для файловой системы
+    #Установка столбцов и строк для файловой системы
     def set_file_system(winfo):
         winfo.file_system['columns'] = ("File","Type","Size")
         #Инициализация столбцов
@@ -107,18 +121,25 @@ class winfoWindow(tk.Toplevel):
         winfo.file_system.heading("Type",text="Type",anchor="w")
         winfo.file_system.heading("Size",text="Size",anchor="w")
     
+    #Заполнение обзорщика файла файлами торрента
     def fill_the_table(winfo):  
+        #Чтение метафайла
         winfo.torrent.read_Metafile()
-        if  winfo.torrent.kind_file == Torrent._Kinds_of_file.SINGLE_FILE:
-            winfo.n_ame,winfo.t_ype = dividePrefix(winfo.torrent.info['name'],".")
-            winfo.t_ype="."+winfo.t_ype
-            winfo.s_ize = size(winfo.torrent.length,system=alternative)
-            winfo.file_system.insert(parent="",index = "end",iid=0,values = (winfo.n_ame,winfo.t_ype,winfo.s_ize))
+        #Проверка типа файла 
+        if winfo.torrent.kind_file == Torrent._Kinds_of_file.SINGLE_FILE:
+            #Имя одного файла
+            name_of_one_file = winfo.torrent.info['name']
+            #Разделение на имя и на тип файла
+            winfo.name,winfo.type = dividePrefix(name_of_one_file,".")
+            #Общий размер = размер одного файла
+            winfo.size = winfo.torrent.size
+            #Вставка в обзорщик файловой системы
+            winfo.file_system.insert(parent="",index = "end",values = (winfo.name,"."+winfo.type,winfo.size))
         elif winfo.torrent.kind_file == Torrent._Kinds_of_file.MULTIPLE_FILE:
-            winfo.s_ize = size(winfo.torrent.length,system=alternative)
+            pass
 
 
-#Вспомогательная функция вне класса 
+#Вспомогательная функция для разделения префикса 
 def dividePrefix(path,sym):
     parts  = path.split(sym)
     last_part = parts.pop(-1)
