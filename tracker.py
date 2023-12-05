@@ -33,6 +33,7 @@ class Tracker:
                 track.interval = track.response['interval']
                 track.connect_with_peers()
             except Exception:
+                # TODO Остановить процесс!!!
                  messagebox.showerror("Erorr","Can't connect with a tracker")
                  
         def connect_with_peers(track):
