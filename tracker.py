@@ -33,7 +33,7 @@ class Tracker:
                 track.interval = track.response['interval']
                 track.connect_with_peers()
             except Exception:
-                 messagebox.showerror("Can't connect with a tracker")
+                 messagebox.showerror("Erorr","Can't connect with a tracker")
                  
         def connect_with_peers(track):
             track.get_list_of_peers()
