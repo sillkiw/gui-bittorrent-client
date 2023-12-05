@@ -13,7 +13,11 @@ class HeadWindow(tk.Tk): #главное окно
         head.head_height = head.winfo_screenheight() #высота главного окна
         head.geometry(f"{head.head_width}x{head.head_height}")
         head.iconbitmap("images/icon.ico")
-        #Установка просмотрщика установки
+        #Инициализация списка труб для передачи информации между процессами
+        head.amount_of_installation = 0
+        head.pipes_list = []
+        head.torrent_list = []
+        #Обзорщик установок
         head.number_of_torrent = 0
         head.viewer = ttk.Treeview(head,show="headings")
         head.fill_viewer_collums()
@@ -26,7 +30,7 @@ class HeadWindow(tk.Tk): #главное окно
         #Функция открытия файловой системы и выбора файла
         def open_file_system(): 
             #Пользователь выбирает торрент файл
-            head.target_file = fd.askopenfile(filetypes =[('Torrent Files', '*.torrent')]) 
+            head.target_torrent = fd.askopenfile(filetypes =[('Torrent Files', '*.torrent')]) 
             head.show_info_ab_file()
 
         #Инициализация панели инструментов (Open|Edit|View)
@@ -49,31 +53,44 @@ class HeadWindow(tk.Tk): #главное окно
     def show_info_ab_file(head):
         #Jткрытия окна обзорщика файловой системы торрент файла
         #(!)(!)Реализовать проверку на дурака(пользователь добавляет один и тот же торрент несколько раз)(проверять части)
-        if  head.target_file != None:
+        if  head.target_torrent != None:
             head.torrent_show = winfoWindow(head) 
             head.check_user_action()
             
-    def updater(head,id,r):
-        while True:
-            peer = str(r.recv())
-            print(peer)
-            head.viewer.item(id,text = "",values=(head.torrent.name,head.torrent_show.s_ize,"0%","Downloading...",peer,"?","?"))
+
     #Проверка ответа пользователя     
-    def check_user_action(head):
-            
+    def check_user_action(head):  
         #Ожидание ответа пользователя
         head.wait_window(head.torrent_show)
         if head.torrent_show.state_of_answer == winfoWindow._States_of_answer.T_OPENED:
-                head.torrent = head.torrent_show.torrent 
-                head.from_install,head.in_install = Pipe()
-                #Инициализация установочного менеджера
-                head.installation_mng = Installation_MNG(head.torrent,head.in_install)
-                #Запуск нового потока
-                head.installation_mng.start()
-                head.viewer.insert(parent="",index = "end",iid = head.number_of_torrent,values = (head.torrent.name,head.torrent_show.s_ize,"0%","Downloading...","?","?","?"))
-                head.thread = threading.Thread(target=head.updater,args=(head.number_of_torrent,head.from_install))
-                head.thread.start()
-                head.number_of_torrent+=1
+                #Добавление выбранного торрента в список торрентов 
+                head.torrent_list.append(head.torrent_show.torrent) 
+                #Инициализация и начала установки
+                head.initalize_installation()
+    
+    #Функция для потоков для обновления информации об установочном процессе 
+    def updater(head,id,from_install):
+        while True:
+            peer = str(from_install.recv())
+            print(peer)
+            head.viewer.item(id,text = "",values=(head.torrent.name,head.torrent.s_ize,"0%","Downloading...",peer,"?","?"))
+    
+    #Инициализация и начала установки
+    def initalize_installation(head):
+        torrent = head.torrent_list[-1]
+        #Размещение строки в обзорщик установки
+        head.viewer.insert(parent="",index = "end",iid = head.number_of_torrent,
+                           values = (torrent.name,torrent.size,"0%","Downloading...","?","?","?"))
+        #Нужно сохранять трубы в массив,а иначе не работает
+        head.pipes_list.append(Pipe())
+        to_head,from_install = head.pipes_list[-1]
+        #Инициализация установочного менеджера
+        Installation_MNG(torrent,to_head).start()
+        #Запуск нового потока для обновления информации на экране
+        threading.Thread(target=head.updater,args=(head.number_of_torrent,from_install)).start()
+        #Увилечение счетчика 
+        head.number_of_torrent+=1
+
     #Обзорщик установок
     def fill_viewer_collums(head):
         head.viewer['columns'] = ("Name","Size","Progress","Status","Peers","Speed","Ratio")
