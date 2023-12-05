@@ -71,7 +71,9 @@ class HeadWindow(tk.Tk): #главное окно
                 #Запуск нового потока
                 head.installation_mng.start()
                 head.viewer.insert(parent="",index = "end",iid = head.number_of_torrent,values = (head.torrent.name,head.torrent_show.s_ize,"0%","Downloading...","?","?","?"))
-                threading.Thread(target=head.updater,args=(head.number_of_torrent,head.from_install)).start()
+                head.thread = threading.Thread(target=head.updater,args=(head.number_of_torrent,head.from_install))
+                head.thread.start()
+                head.number_of_torrent+=1
     #Обзорщик установок
     def fill_viewer_collums(head):
         head.viewer['columns'] = ("Name","Size","Progress","Status","Peers","Speed","Ratio")
