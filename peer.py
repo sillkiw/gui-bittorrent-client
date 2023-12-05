@@ -8,7 +8,7 @@ class Peer:
         pr.live =False
     def connect(pr):
         try:
-            pr.socket = socket.create_connection((pr.ip,pr.port),timeout=1)
+            pr.socket = socket.create_connection((pr.ip,pr.port),timeout=0.3)
             pr.socket.setblocking(False)
             pr.live = True
         except Exception as e:
