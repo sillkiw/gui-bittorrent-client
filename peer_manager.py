@@ -8,7 +8,7 @@ class PeerManager:
         for peer in pmg.tracker.connected_peers:
             if pmg.handshake(peer):
                 pmg.peers.append(peer)
-            else:
+            else: 
                 print(f"Can't handshake with {peer.ip}")
     def handshake(pmg,peer):
         try:
