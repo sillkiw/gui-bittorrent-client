@@ -5,11 +5,16 @@ from tkinter import font
 from torrent import Torrent
 from hurry.filesize import size
 from hurry.filesize import alternative
+from enum import Enum
 
 class winfoWindow(tk.Toplevel):
+    
     #Состояния ответа пользователя
-    class _States_of_answer:
-        T_CLOSED,U_THINKING,T_OPENED = (-1,0,1)
+    class _States_of_answer(Enum):
+        T_CLOSED = -1 #Окно закрыли
+        U_THINKING = 0 #Окно работает
+        T_OPENED = 1 #Пользователь нажал на open
+
     #Окно обзорщика торрент файла
     def __init__(winfo,head):
          super().__init__(head)
