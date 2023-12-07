@@ -88,7 +88,7 @@ class winfoWindow(tk.Toplevel):
         new_target_torrent = fd.askopenfile(parent = winfo,initialdir=winfo.direction,filetypes =[('Torrent Files', '*.torrent')]) 
         #Изменение всех предыдущих значений
         winfo.torrent_path = new_target_torrent.name
-        winfo.direction,winfo.torrent_name = winfo.torrent_path.split("/")
+        winfo.direction,winfo.torrent_name = dividePrefix(winfo.torrent_path,"/")
         winfo.source_button.config(text = winfo.torrent_name)
         winfo.torrent = Torrent(winfo.torrent_path,winfo.torrent_name)
         #Удаление файловой системы предыдущего торрента
