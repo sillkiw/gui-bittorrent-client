@@ -1,10 +1,12 @@
 import bencode as ben   #Библиотека для бенкодирования(используется в метафайлах торрента)
 from hurry.filesize import size,alternative
-
+from enum import Enum
 class Torrent: 
+    
     #Типы файла
-    class _Kinds_of_file:
-        MULTIPLE_FILE,SINGLE_FILE = (0,1)
+    class _Kinds_of_file(Enum):
+        MULTIPLE_FILE = 1
+        SINGLE_FILE = 0
     
     def __init__(tr,file_path,name):
         #Путь до торрента
