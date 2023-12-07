@@ -1,4 +1,4 @@
-from messages import impl_handshake_msg
+from messages import handshake_msg_to_bytes
 from threading import Thread
 import select
 
@@ -7,7 +7,7 @@ class PeerManager(Thread):
         Thread.__init__(pmg)
         pmg.tracker = tracker
         pmg.peers = []
-        pmg.handshake_message = impl_handshake_msg(pmg.tracker.peer_id,pmg.tracker.info_hash)
+        pmg.handshake_message = handshake_msg_to_bytes(pmg.tracker.peer_id,pmg.tracker.info_hash)
     def add_peers(pmg):
         for peer in pmg.tracker.connected_peers:
             if pmg.handshake(peer):
