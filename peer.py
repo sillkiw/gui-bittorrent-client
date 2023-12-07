@@ -4,6 +4,7 @@ class Peer:
     def __init__(pr,ip,port):
         pr.ip = ip
         pr.port = port
+        pr.read_buffer = b''
         pr.socket = None
         pr.live =False
     def connect(pr):
