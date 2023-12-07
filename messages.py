@@ -1,5 +1,7 @@
 from struct import pack
 
+
+#HandShake
 HS_PSTR = b"BitTorrent protocol"
 HS_PSTRLEN = len(HS_PSTR)
 def impl_handshake_msg(peer_id,info_hash):
@@ -10,4 +12,5 @@ def impl_handshake_msg(peer_id,info_hash):
                          reserved,
                          info_hash,
                          peer_id)
-    
+
+
