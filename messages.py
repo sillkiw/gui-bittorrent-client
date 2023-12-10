@@ -1,6 +1,18 @@
 '''Модуль с функциями для работы с сообщениями, определенными в BitTorrent protocol'''
 
 from struct import pack,unpack
+from bitstring import BitArray
+'''Вспомогательные функции и константы'''
+
+#Каждое сообщение начинается с <len> | размер фиксированный - 4 байта 
+LEN = 4
+
+def name_msg_from_bytes_maker(payload,cons_total_length,cons_payload_length,cons_id,message_name):
+    payload_length,message_id = unpack(">IB",payload[:cons_total_length])
+    if (cons_id != None and message_id != cons_id) or cons_payload_length != payload_length :
+        raise Exception(f"Принятое сообщение не \"{message_name}\"")
+    return payload_length
+
 
 '''
 HandShake message:
@@ -71,7 +83,7 @@ KeepAlive message:
         payload_length = 0
     -----------------------------------------------------------------------------------------------------------------
 '''
-KEEP_ALIVE_TOTAL_LENGTH = 4
+KEEP_ALIVE_TOTAL_LENGTH = LEN
 KEEP_ALIVE_PAYLOAD_LENGTH = 0
 
 def keep_alive_msg_from_bytes(payload):
@@ -103,8 +115,8 @@ Choke message:
         total_length   = 5
     -----------------------------------------------------------------------------------------------------------------
 '''
-CHOKE_TOTAL_LENGTH = 5
-CHOKE_PAYLOAD_LENGTH = 5
+CHOKE_PAYLOAD_LENGTH = 1
+CHOKE_TOTAL_LENGTH = LEN + CHOKE_PAYLOAD_LENGTH #5
 CHOKE_MESSAGE_ID = 0
 
 def choke_msg_from_bytes(payload):
@@ -132,8 +144,8 @@ Unchoke message:
         аналогично с Choke
     -----------------------------------------------------------------------------------------------------------------
 '''
-UNCHOKE_TOTAL_LENGTH = 5
-UNCHOKE_PAYLOAD_LENGTH = 5
+UNCHOKE_PAYLOAD_LENGTH = 1
+UNCHOKE_TOTAL_LENGTH = LEN + UNCHOKE_PAYLOAD_LENGTH
 UNCHOKE_MESSAGE_ID = 1
 
 def unchoke_msg_from_bytes(payload):
@@ -160,9 +172,9 @@ Interested message:
         аналогично с Choke
     -----------------------------------------------------------------------------------------------------------------
 '''
-INTERESTED_TOTAL_LENGTH = 5
-INTERESTED_PAYLOAD_LENGTH = 5
-INTERESTED_MESSAGE_ID = 1
+INTERESTED_PAYLOAD_LENGTH = 1
+INTERESTED_TOTAL_LENGTH = LEN + INTERESTED_PAYLOAD_LENGTH
+INTERESTED_MESSAGE_ID = 2
 
 def interseted_msg_from_bytes(payload):
     return name_msg_from_bytes_maker(payload,
@@ -171,20 +183,236 @@ def interseted_msg_from_bytes(payload):
                   INTERESTED_MESSAGE_ID,
                   "Interested message")
 
-''''''
-def name_msg_from_bytes_maker(payload,cons_total_length,cons_payload_length,cons_id,message_name):
-    payload_length,message_id = unpack(">UB",payload[:cons_total_length])
-    if (cons_id != None and message_id != cons_id) or cons_payload_length != payload_length :
-        raise Exception(f"Принятое сообщение не \"{message_name}\"")
-    return cons_payload_length
+'''
+Unterested message:
+    -----------------------------------------------------------------------------------------------------------------
+    Назначение:
+    -----------------------------------------------------------------------------------------------------------------
+        Сообщение о том, что пир незаинтересован в обмене частями
+    -----------------------------------------------------------------------------------------------------------------
+    Вид:
+    -----------------------------------------------------------------------------------------------------------------
+        <len=0001><id=3>
+        len - фиксированный 
+        id  - 3
+    -----------------------------------------------------------------------------------------------------------------
+    Общий размер сообщения и его действительной части:
+    -----------------------------------------------------------------------------------------------------------------
+        аналогично с Choke
+    -----------------------------------------------------------------------------------------------------------------
+'''
+NOTINTERESTED_PAYLOAD_LENGTH = 1
+NOTINTERESTED_TOTAL_LENGTH = LEN + NOTINTERESTED_PAYLOAD_LENGTH
+NOTINTERESTED_MESSAGE_ID = 3
 
+def notInterested_msg_from_bytes(payload):
+    return name_msg_from_bytes_maker(payload,
+                  NOTINTERESTED_TOTAL_LENGTH,
+                  NOTINTERESTED_PAYLOAD_LENGTH,
+                  NOTINTERESTED_MESSAGE_ID,
+                  "Not interested  message")
+
+'''
+Have message
+   -----------------------------------------------------------------------------------------------------------------
+    Назначение:
+    -----------------------------------------------------------------------------------------------------------------
+        Сообщение о том, что пир имеет определенную часть
+    -----------------------------------------------------------------------------------------------------------------
+    Вид:
+    -----------------------------------------------------------------------------------------------------------------
+        have: <len=0005><id=4><piece index>
+        len - фиксированный размер сообщения
+        id  - 4
+        piece index - индекс части, которая есть у пира
+    -----------------------------------------------------------------------------------------------------------------
+    Общий размер сообщения и его действительной части:
+    -----------------------------------------------------------------------------------------------------------------
+        len -         4(bytes)
+        id  -         1(byte)
+        piece_index - 4(bytes)
+        ----------------------+
+        total_length = 9
+        payload_length = 5
+    -----------------------------------------------------------------------------------------------------------------
+
+'''
+HAVE_PAYLOAD_LEGNTH = 5
+HAVE_TOTAL_LENGTH = + LEN + HAVE_PAYLOAD_LEGNTH 
+HAVE_MESSAGE_ID = 4
+
+def have_msg_from_bytes(payload):
+    payload_length,message_id,piece_index = unpack(">IBI",payload[:HAVE_TOTAL_LENGTH])
+    if message_id != HAVE_MESSAGE_ID:
+        raise Exception("Это не Have message")
+    return payload_length,piece_index
+
+'''
+Bitfield message(опцианально)
+   -----------------------------------------------------------------------------------------------------------------
+    Назначение:
+    -----------------------------------------------------------------------------------------------------------------
+        Сообщение отправляется сразу же после Handshake message и служит для того, чтобы сообщить о наличии 
+        установленных частей
+    -----------------------------------------------------------------------------------------------------------------
+    Вид:
+    -----------------------------------------------------------------------------------------------------------------
+        bitfield: <len=0001+X><id=5><bitfield>
+        len - нефиксированный размер сообщения
+        id  - 5
+        bitfield - строка состоящая из 0 и 1 
+    -----------------------------------------------------------------------------------------------------------------
+    Общий размер сообщения и его действительной части:
+    -----------------------------------------------------------------------------------------------------------------
+       <len>        = 4 bytes
+       <id>         = 1 byte
+       <bitfield>   = len(bitfield) (bytes)
+       total_length   - ?
+       payload_length - ?
+    -----------------------------------------------------------------------------------------------------------------
+
+'''
+BITFIELD_MESSAGE_ID = 5
+
+def bitfield_msg_from_bytes(payload):
+    payload_length,message_id = unpack(">IB",payload[:LEN+1])
+    bitfield_length = payload_length - 1
+
+    if message_id != BITFIELD_MESSAGE_ID:
+        raise Exception("Не Bitfield message") 
+    raw_bitfield, = unpack(f">{bitfield_length}s",payload[5:5+bitfield_length])
+    bitfield = BitArray(bytes = raw_bitfield)
+    #TODO: Проверить bitfield
+    return payload_length,bitfield
+
+#TODO: доделать объяснение
+
+'''
+Request message(опцианально)
+   -----------------------------------------------------------------------------------------------------------------
+    Назначение:
+    -----------------------------------------------------------------------------------------------------------------
+        Сообщение отправляется сразу же после Handshake message и служит для того, чтобы сообщить о наличии 
+        установленных частей
+    -----------------------------------------------------------------------------------------------------------------
+    Вид:
+    -----------------------------------------------------------------------------------------------------------------
+        request: <len=0013><id=6><index><begin><length>
+        len - фиксированный размер сообщения 13
+        id  - 6
+        index - число, индекс части
+        begin - 
+        length
+    -----------------------------------------------------------------------------------------------------------------
+    Общий размер сообщения и его действительной части:
+    -----------------------------------------------------------------------------------------------------------------
+       <len>        = 4 bytes
+       <id>         = 1 byte
+       <bitfield>   = len(bitfield) (bytes)
+       total_length   - ?
+       payload_length - ?
+    -----------------------------------------------------------------------------------------------------------------
+
+'''
+REQUEST_PAYLOAD_LENGTH = 13
+REQUEST_TOTAL_LENGTH = LEN + REQUEST_PAYLOAD_LENGTH
+REQUEST_MESSAGE_ID = 6
+
+def request_msg_from_bytes(payload):
+    payload_length,message_id,index,begin,length = unpack(">IBIII",payload[:REQUEST_TOTAL_LENGTH]) 
+    if message_id !=  REQUEST_MESSAGE_ID or payload_length != REQUEST_PAYLOAD_LENGTH:
+        raise Exception("Не Request message")
+    return payload_length,index,begin,length
+
+#TODO: доделать объяснение
+
+'''
+Piece message(опцианально)
+   -----------------------------------------------------------------------------------------------------------------
+    Назначение:
+    -----------------------------------------------------------------------------------------------------------------
+    
+    -----------------------------------------------------------------------------------------------------------------
+    Вид:
+    -----------------------------------------------------------------------------------------------------------------
+    
+    -----------------------------------------------------------------------------------------------------------------
+    Общий размер сообщения и его действительной части:
+    -----------------------------------------------------------------------------------------------------------------
+
+    -----------------------------------------------------------------------------------------------------------------
+
+'''
+PIECE_MESSAGE_ID = 7
+
+def piece_msg_from_bytes(payload):
+    block_length = len() - (LEN + 9)
+    payload_length,message_id,piece_index,begin,block = unpack(f">IBII{block_length}s",payload[:13+block_length])
+
+    if message_id != PIECE_MESSAGE_ID:
+         raise Exception("Не Piece message")
+    return payload_length,piece_index,begin,block
+
+'''
+ Cancel message(опцианально)
+   -----------------------------------------------------------------------------------------------------------------
+    Назначение:
+    -----------------------------------------------------------------------------------------------------------------
+    
+    -----------------------------------------------------------------------------------------------------------------
+    Вид:
+    -----------------------------------------------------------------------------------------------------------------
+    
+    -----------------------------------------------------------------------------------------------------------------
+    Общий размер сообщения и его действительной части:
+    -----------------------------------------------------------------------------------------------------------------
+
+    -----------------------------------------------------------------------------------------------------------------
+
+'''
+CANCEL_PAYLOAD_LENGTH = 13
+CANCEL_TOTAL_LENGTH = LEN + CANCEL_PAYLOAD_LENGTH
+CANCEL_MESSAGE_ID = 8
+
+def cancel_msg_from_bytes(payload):
+    payload_length,message_id,index,begin,length =  unpack(">IBIII", payload[:CANCEL_TOTAL_LENGTH])
+
+    if message_id != CANCEL_MESSAGE_ID:
+        raise("Не Cancel message")
+    
+    return payload_length,index,begin,length
+
+'''
+ Port message(опцианально)
+   -----------------------------------------------------------------------------------------------------------------
+    Назначение:
+    -----------------------------------------------------------------------------------------------------------------
+    
+    -----------------------------------------------------------------------------------------------------------------
+    Вид:
+    -----------------------------------------------------------------------------------------------------------------
+    
+    -----------------------------------------------------------------------------------------------------------------
+    Общий размер сообщения и его действительной части:
+    -----------------------------------------------------------------------------------------------------------------
+
+    -----------------------------------------------------------------------------------------------------------------
+
+'''
+PORT_PAYLOAD_LENGTH = 5
+PORT_TOTAL_LENGTH = LEN + PORT_PAYLOAD_LENGTH
+PORT_MESSAGE_ID = 9
+
+def port_msg_from_bytes(payload):
+    payload_length,message_id,listen_port = unpack(">IBI",payload[:PORT_TOTAL_LENGTH])
+    
+    if message_id != PORT_MESSAGE_ID:
+        raise("Не Port message")
+    
+    return payload_length,listen_port
 
 
 '''Определитель приходящих сообщений'''
-
-#Каждое сообщение начинается с <len> | размер фиксированный - 4 байта 
-LEN = 4
-
 def determinator_of_messages(u_message):
     try:
         u_message_len,u_message_id = unpack(">IB")
@@ -196,17 +424,17 @@ def determinator_of_messages(u_message):
         0 : choke_msg_from_bytes,
         1 : unchoke_msg_from_bytes,
         2 : interseted_msg_from_bytes,
-        3 : None,
-        4 : None,
-        5 : None,
-        6 : None,
-        7 : None,
-        8 : None,
-        9 : None
+        3 : notInterested_msg_from_bytes,
+        4 : have_msg_from_bytes,
+        5 : bitfield_msg_from_bytes,
+        6 : request_msg_from_bytes,
+        7 : piece_msg_from_bytes,
+        8 : cancel_msg_from_bytes,
+        9 : port_msg_from_bytes
     }
     
     if u_message_id not in (list(map_id_to_message.keys())):
         raise Exception("Ошибка в определении id сообщения")
-    
+           
     return map_id_to_message[u_message_id](u_message)
 
