@@ -8,12 +8,14 @@ class PeerManager(Thread):
         pmg.tracker = tracker
         pmg.peers = []
         pmg.handshake_message = handshake_msg_to_bytes(pmg.tracker.peer_id,pmg.tracker.info_hash)
+
     def add_peers(pmg):
         for peer in pmg.tracker.connected_peers:
             if pmg.handshake(peer):
                 pmg.peers.append(peer)
             else: 
                 print(f"Can't handshake with {peer.ip}")
+
     def run(pmg):
         while True:
             for peer in pmg.peers:
@@ -28,9 +30,7 @@ class PeerManager(Thread):
                 
                 for message in peer.unpack_messages():
                     pmg.answer_new_messages(message,peer)
-                # for message in peer.get_messages():
-                #     pmg.process_new_manager(message,peer)
-    
+             
     def remove_peer(pmg,peer):
         try:
             peer.socket.close()
@@ -40,7 +40,6 @@ class PeerManager(Thread):
 
     def read_from_socket(pmg,sock):
         data = b''
-
         while True:
             try:
                 ans = sock.recv(4096)
