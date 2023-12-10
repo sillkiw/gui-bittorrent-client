@@ -1,5 +1,6 @@
 import socket
 import logging
+from messages import LEN
 class Peer:
     def __init__(pr,ip,port):
         pr.ip = ip
@@ -25,5 +26,6 @@ class Peer:
             pr.live = False
             print("Failed to send to peer : %s" % e.__str__())
     
-    # def unpack_messages(pr):
+    def unpack_messages(pr):
+        while len(pr.read_buffer) > LEN
         
