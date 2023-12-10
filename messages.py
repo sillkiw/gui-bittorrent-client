@@ -1,6 +1,10 @@
 from struct import pack,unpack
 
 
+#
+LEN = 4
+
+
 #HandShake <pstrlen><pstr><reserved><info_hash><peer_id>
 HS_PSTR = b"BitTorrent protocol"
 HS_PSTRLEN = len(HS_PSTR)
@@ -19,5 +23,5 @@ KEEP_ALIVE_PAYLOAD_LENGTH = 0
 def keep_alive_msg_from_bytes(payload):
     payload_length = unpack(">I",payload[:KEEP_ALIVE_TOTAL_LENGTH])
     if payload_length != KEEP_ALIVE_PAYLOAD_LENGTH:
-        return Exception("Принятое сообщение не \"KeepAlive\"" )
+        raise Exception("Принятое сообщение не \"KeepAlive\"" )
     return KEEP_ALIVE_TOTAL_LENGTH
