@@ -22,8 +22,8 @@ class Peer:
         try:
             pr.socket.send(msg)
         except Exception as e:
-            pr.healthy = False
+            pr.live = False
             print("Failed to send to peer : %s" % e.__str__())
     
-    def unpack_messages(pr):
+    # def unpack_messages(pr):
         
