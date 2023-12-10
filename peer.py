@@ -23,6 +23,7 @@ class Peer:
             pr.socket.send(msg)
         except Exception as e:
             pr.healthy = False
-            logging.error("Failed to send to peer : %s" % e.__str__())
+            print("Failed to send to peer : %s" % e.__str__())
     
-    def
+    def unpack_messages(pr):
+        
