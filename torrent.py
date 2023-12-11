@@ -46,7 +46,7 @@ class Torrent:
                 tr.kind_file = Torrent._Kinds_of_file.SINGLE_FILE
                 #Размер файла
                 tr.length = tr.info['length']
-            tr.number_of_pieces = math.cell(tr.length/tr.piece_length)
+            tr.number_of_pieces = math.ceil(tr.length/tr.piece_length)
             #Представление размера файлов в красивом виде    
             tr.size =  size(tr.length,system=alternative)
   
