@@ -9,9 +9,17 @@ class PeerManager(Thread):
         pmg.peers = []
         pmg.handshake_message = handshake_msg_to_bytes(pmg.tracker.peer_id,pmg.tracker.info_hash)
 
+    def handshake(pmg,peer):
+        try:
+            peer.sent_message(pmg.handshake_message)
+            print(f"HandShake with {peer.ip}")
+            return True
+        except Exception as e:
+            print(f"Handshake error with {peer.ip}")
+
     def handshake_with_peers(pmg):
         for peer in pmg.tracker.connected_peers:
-            if pmg.sent_handshake(peer):
+            if pmg.handshake(peer):
                 pmg.peers.append(peer)
             else: 
                 print(f"Can't handshake with {peer.ip}")
@@ -26,7 +34,7 @@ class PeerManager(Thread):
                     pmg.remove_peer(peer)
                     continue 
                 
-                peer.read_buffer += payload
+                peer.answer_from_me += payload
             
                 for message in peer.unpack_messages():
                     pmg.answer_new_messages(message,peer)
@@ -38,9 +46,9 @@ class PeerManager(Thread):
         elif message_id == messages.UNCHOKE_MESSAGE_ID:
             peer.handel_unchoke()
         elif message_id == messages.INTERESTED_MESSAGE_ID:
-            peer.handle_interested
+            peer.handle_interested()
         elif message_id == messages.NOTINTERESTED_MESSAGE_ID:
-            peer.handle_not_interested
+            peer.handle_not_interested()
         elif message_id == messages.HAVE_MESSAGE_ID:
             peer.handle_have(message)
         elif message_id == messages.BITFIELD_MESSAGE_ID:
@@ -73,14 +81,13 @@ class PeerManager(Thread):
                     break
                 data += ans
             except Exception as e:
-                print("error")
                 break
         return data
 
     def handshake(pmg,peer):
         try:
             peer.sent_message(pmg.handshake_message)
-            print(f"HandShake with {peer.ip}")
+            print(f"HandShake с {peer.ip}")
             return True
         except Exception as e:
             print(f"Handshake error with {peer.ip}")
