@@ -1,12 +1,13 @@
-import bencode as ben   #Библиотека для бенкодирования(используется в метафайлах торрента)
+import bencode as ben,math   #Библиотека для бенкодирования(используется в метафайлах торрента)
 from hurry.filesize import size,alternative
 from enum import Enum
+
+
 class Torrent: 
-    
     #Типы файла
     class _Kinds_of_file(Enum):
-        MULTIPLE_FILE = 1
-        SINGLE_FILE = 0
+       SINGLE_FILE,MULTIPLE_FILE = (0,1)
+     
     
     def __init__(tr,file_path,name):
         #Путь до торрента
@@ -45,6 +46,7 @@ class Torrent:
                 tr.kind_file = Torrent._Kinds_of_file.SINGLE_FILE
                 #Размер файла
                 tr.length = tr.info['length']
+            tr.number_of_pieces = math.cell(tr.length/tr.piece_length)
             #Представление размера файлов в красивом виде    
             tr.size =  size(tr.length,system=alternative)
   
