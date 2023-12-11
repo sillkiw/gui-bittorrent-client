@@ -39,12 +39,12 @@ class PeerManager(Thread):
                 for message in peer.unpack_messages():
                     pmg.answer_new_messages(message,peer)
 
-    def answer_new_messages(message,peer):
-        message_id = message[1]
+    def answer_new_messages(pmg,message,peer):
+        message_id = message["id"]
         if message_id == messages.CHOKE_MESSAGE_ID:
             peer.handle_choke()
         elif message_id == messages.UNCHOKE_MESSAGE_ID:
-            peer.handel_unchoke()
+            peer.handle_unchoke()
         elif message_id == messages.INTERESTED_MESSAGE_ID:
             peer.handle_interested()
         elif message_id == messages.NOTINTERESTED_MESSAGE_ID:
