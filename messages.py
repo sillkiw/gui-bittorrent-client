@@ -9,9 +9,9 @@ LEN = 4
 
 def name_msg_from_bytes_maker(payload,cons_total_length,cons_payload_length,cons_id,message_name):
     payload_length,message_id = unpack(">IB",payload[:cons_total_length])
-    if (cons_id != None and message_id != cons_id) or cons_payload_length != payload_length :
+    if message_id != cons_id or cons_payload_length != payload_length :
         raise Exception(f"Принятое сообщение не \"{message_name}\"")
-    return payload_length
+    return cons_total_length
 
 
 '''
@@ -55,7 +55,7 @@ def handshake_msg_to_bytes(peer_id,info_hash):
                          peer_id)
 
 def handshake_msg_from_bytes(payload,info_hash):
-    pstrlen = unpack(">B",payload[:1])
+    pstrlen, = unpack(">B",payload[:1])
     pstr,reserved,info_hash_chk,peer_id = unpack(f">{pstrlen}s8s20s20s",payload[1:HANDSHAKE_TOTAL_LENGTH])
     if pstr != HS_PSTR:
         raise Exception("Ошибка в названии протокола")
@@ -87,11 +87,7 @@ KEEP_ALIVE_TOTAL_LENGTH = LEN
 KEEP_ALIVE_PAYLOAD_LENGTH = 0
 
 def keep_alive_msg_from_bytes(payload):
-    return name_msg_from_bytes_maker(payload,
-                  KEEP_ALIVE_TOTAL_LENGTH,
-                  KEEP_ALIVE_PAYLOAD_LENGTH,
-                  None,
-                  "Choke message")
+    
 
 '''
 Choke message:
@@ -118,6 +114,9 @@ Choke message:
 CHOKE_PAYLOAD_LENGTH = 1
 CHOKE_TOTAL_LENGTH = LEN + CHOKE_PAYLOAD_LENGTH #5
 CHOKE_MESSAGE_ID = 0
+
+def choke_msg_to_bytes():
+    return pack(">IB",CHOKE_PAYLOAD_LENGTH,CHOKE_MESSAGE_ID)
 
 def choke_msg_from_bytes(payload):
     return name_msg_from_bytes_maker(payload,
@@ -147,6 +146,9 @@ Unchoke message:
 UNCHOKE_PAYLOAD_LENGTH = 1
 UNCHOKE_TOTAL_LENGTH = LEN + UNCHOKE_PAYLOAD_LENGTH
 UNCHOKE_MESSAGE_ID = 1
+
+def unchoke_msg_to_bytes():
+    return pack(">IB",UNCHOKE_PAYLOAD_LENGTH,UNCHOKE_MESSAGE_ID)
 
 def unchoke_msg_from_bytes(payload):
     return name_msg_from_bytes_maker(payload,
