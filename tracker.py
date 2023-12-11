@@ -60,6 +60,6 @@ class Tracker:
                 position += 4
                 peer_port = struct.unpack_from("!H",track.packed_peers,position)[0]
                 position += 2
-                track.list_of_peers.append(Peer(peer_ip,peer_port))
+                track.list_of_peers.append(Peer(peer_ip,peer_port,track))
         
  
