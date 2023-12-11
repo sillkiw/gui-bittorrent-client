@@ -9,9 +9,11 @@ class HeadWindow(tk.Tk): #главное окно
     def __init__(head):
         super().__init__()    
         head.title('PirTorrent')
-        head.head_width = head.winfo_screenwidth()   #ширина главного окна
-        head.head_height = head.winfo_screenheight() #высота главного окна
-        head.geometry(f"{head.head_width}x{head.head_height}")
+        head.sc_width = head.winfo_screenwidth()
+        head.sc_height = head.winfo_screenheight()
+        head.head_width = head.sc_width//2 + head.sc_width//3 #ширина главного окна
+        head.head_height = head.sc_height//2 + head.sc_height//4 #высота главного окна
+        head.geometry(f"{head.head_width}x{head.head_height}+{(head.sc_width - head.head_width)//2}+{(head.sc_height - head.head_height -100)//2}")
         head.iconbitmap("images/icon.ico")
         #Инициализация списка труб для передачи информации между процессами
         head.amount_of_installation = 0
