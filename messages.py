@@ -184,6 +184,9 @@ INTERESTED_PAYLOAD_LENGTH = 1
 INTERESTED_TOTAL_LENGTH = LEN + INTERESTED_PAYLOAD_LENGTH
 INTERESTED_MESSAGE_ID = 2
 
+def interested_msg_to_bytes():
+    return pack(">IB",INTERESTED_PAYLOAD_LENGTH,INTERESTED_MESSAGE_ID)
+
 def interseted_msg_from_bytes(payload):
     return name_msg_from_bytes_maker(payload,
                   INTERESTED_TOTAL_LENGTH,
