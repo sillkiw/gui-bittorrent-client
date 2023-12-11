@@ -57,7 +57,7 @@ class Peer:
             print("Получение keepalive message")
             return True
         except Exception as e:
-            print(e)
+            pass
         return False
     
     def handle_choke(pr):
@@ -80,11 +80,27 @@ class Peer:
         print(f"Получение сообщения Not Interested от {pr.ip}")
         pr.state['peer_interested'] = False
 
-    def handle_have(pr,have):
+    def handle_have(pr,message_have):
         print(f"Получение сообщения Have от {pr.ip}")
+        pr.bitfield[message_have['piece_index']] = True
 
-    def handle_bitfield(pr,bitfield):
+        if pr.state['peer_choking'] and not pr.state['am_interested']:
+            interested = messages.interested_msg_to_bytes()
+            print(f"Отправка сообщения Interested к {pr.ip}")
+            pr.sent_message(interested)
+            pr.state['am_interested'] = True
+      
+
+    def handle_bitfield(pr,message_bitfield):
         print(f"Получение сообщения Bitfield от {pr.ip}")
+        pr.bitfield = message_bitfield['bitfield']
+        
+        if pr.state['peer_choking'] and not pr.state['am_interested']:
+            interested = messages.interested_msg_to_bytes()
+            print(f"Отправка сообщения Interested к {pr.ip}")
+            pr.sent_message(interested)
+            pr.state['am_interested'] = True
+    
 
     def handle_request(pr,request):
         print(f"Получение сообщения Request от {pr.ip}")
