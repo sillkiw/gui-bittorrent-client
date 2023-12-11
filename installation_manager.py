@@ -1,6 +1,7 @@
 from tracker import Tracker
 from peer_manager import PeerManager
 from tracker import Tracker
+from piece_manager import PieceManager
 import multiprocessing
 
 class Installation_MNG(multiprocessing.Process):
@@ -8,13 +9,15 @@ class Installation_MNG(multiprocessing.Process):
         multiprocessing.Process.__init__(imng)
         #Инициализация трекера
         imng.tracker = Tracker(torrent)
+        imng.piece_mng = PieceManager(torrent)
         #Pipe c head
         imng.to_head = to_head
+
     #Переопределение метода run в Process
     def run(imng):
-        imng.initialize_tracker_connection()
+        imng.initialize_tracker_and_peer_manager()
         imng.to_head.send(imng.tracker.amount_of_connected_peers)
-    def initialize_tracker_connection(imng):
+    def initialize_tracker_and_peer_manager(imng):
         imng.tracker.connect_with_tracker()
         imng.peer_mng = PeerManager(imng.tracker)
         #Инициализация менеджера пиров
