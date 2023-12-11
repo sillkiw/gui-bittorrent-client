@@ -18,6 +18,6 @@ class Installation_MNG(multiprocessing.Process):
         imng.tracker.connect_with_tracker()
         imng.peer_mng = PeerManager(imng.tracker)
         #Инициализация менеджера пиров
-        imng.peer_mng.add_peers()
+        imng.peer_mng.handshake_with_peers()
         imng.peer_mng.start()
         
