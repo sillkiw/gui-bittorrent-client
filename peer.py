@@ -1,6 +1,6 @@
-import socket
+import socket,messages
 from struct import pack,unpack
-import messages
+from bitstring import BitArray
 
 class Peer:
     def __init__(pr,ip,port,tracker):
@@ -11,6 +11,7 @@ class Peer:
         pr.was_handshake = False
         pr.socket = None
         pr.alive =False
+        pr.bitfield = BitArray()
         #Начальные значения состояний подключения по спецификации таие
         pr.state = {
             'am_choking' : True,
