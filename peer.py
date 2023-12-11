@@ -11,7 +11,7 @@ class Peer:
         pr.was_handshake = False
         pr.socket = None
         pr.alive =False
-        pr.bitfield = BitArray()
+        pr.bitfield = BitArray(pr.tracker.torrent.number_of_pieces)
         #Начальные значения состояний подключения по спецификации таие
         pr.state = {
             'am_choking' : True,
