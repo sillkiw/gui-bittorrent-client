@@ -11,7 +11,9 @@ def name_msg_from_bytes_maker(payload,cons_total_length,cons_payload_length,cons
     payload_length,message_id = unpack(">IB",payload[:cons_total_length])
     if message_id != cons_id or cons_payload_length != payload_length :
         raise Exception(f"Принятое сообщение не \"{message_name}\"")
-    return cons_total_length
+    return {'len':payload_length,
+            "id" :message_id,
+            }
 
 
 '''
@@ -87,7 +89,11 @@ KEEP_ALIVE_TOTAL_LENGTH = LEN
 KEEP_ALIVE_PAYLOAD_LENGTH = 0
 
 def keep_alive_msg_from_bytes(payload):
-    
+    payload_length = unpack(">I",payload[:KEEP_ALIVE_TOTAL_LENGTH])
+
+    if payload_length != KEEP_ALIVE_PAYLOAD_LENGTH:
+        raise("Полученное сообщение не Keep-Alive")
+    return KEEP_ALIVE_TOTAL_LENGTH
 
 '''
 Choke message:
@@ -247,8 +253,11 @@ def have_msg_from_bytes(payload):
     payload_length,message_id,piece_index = unpack(">IBI",payload[:HAVE_TOTAL_LENGTH])
     if message_id != HAVE_MESSAGE_ID:
         raise Exception("Это не Have message")
-    return payload_length,piece_index
-
+    return {'len':payload_length,
+            "id" :message_id,
+            "piece_index":piece_index
+            }
+         
 '''
 Bitfield message(опцианально)
    -----------------------------------------------------------------------------------------------------------------
@@ -285,7 +294,10 @@ def bitfield_msg_from_bytes(payload):
     raw_bitfield, = unpack(f">{bitfield_length}s",payload[5:5+bitfield_length])
     bitfield = BitArray(bytes = raw_bitfield)
     #TODO: Проверить bitfield
-    return payload_length,bitfield
+    return {'len':payload_length,
+            "id" :message_id,
+            "bitfield":bitfield,
+            }
 
 #TODO: доделать объяснение
 
@@ -324,7 +336,11 @@ def request_msg_from_bytes(payload):
     payload_length,message_id,index,begin,length = unpack(">IBIII",payload[:REQUEST_TOTAL_LENGTH]) 
     if message_id !=  REQUEST_MESSAGE_ID or payload_length != REQUEST_PAYLOAD_LENGTH:
         raise Exception("Не Request message")
-    return payload_length,index,begin,length
+    return {'len':payload_length,
+            "id" :message_id,
+            "index":index,
+            "begin":begin,
+            "length":length }
 
 #TODO: доделать объяснение
 
@@ -353,7 +369,11 @@ def piece_msg_from_bytes(payload):
 
     if message_id != PIECE_MESSAGE_ID:
          raise Exception("Не Piece message")
-    return payload_length,piece_index,begin,block
+    return {'len':payload_length,
+            "id" :message_id,
+            "piece_index":piece_index,
+            "begin":begin,
+            "block":block}
 
 '''
  Cancel message(опцианально)
@@ -382,7 +402,11 @@ def cancel_msg_from_bytes(payload):
     if message_id != CANCEL_MESSAGE_ID:
         raise("Не Cancel message")
     
-    return payload_length,index,begin,length
+    return {'len':payload_length,
+            "id" :message_id,
+            "index":index,
+            "begin":begin,
+            "length":length }
 
 '''
  Port message(опцианально)
@@ -411,15 +435,18 @@ def port_msg_from_bytes(payload):
     if message_id != PORT_MESSAGE_ID:
         raise("Не Port message")
     
-    return payload_length,listen_port
+    return {'len':payload_length,
+            "id" :message_id,
+            "listen_port":listen_port,
+            }
 
 
 '''Определитель приходящих сообщений'''
 def determinator_of_messages(u_message):
     try:
-        u_message_len,u_message_id = unpack(">IB")
+        u_message_len,u_message_id = unpack(">IB",u_message[:LEN+1]) #размер Len(4 byte) + message_id(1 byte)
     except Exception as e:
-        print("Возникла ошибка в чтении сообщения")
+        print(F"Возникла ошибка в чтении сообщения {e}")
         return None
     
     map_id_to_message = {
