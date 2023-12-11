@@ -6,15 +6,16 @@ from tkinter import messagebox
 from peer import Peer
 import struct,socket,time
 class Tracker:      
-        def __init__(track,torrent_file):
-            track.url = torrent_file.announce
-            track.info_hash = hash.sha1(ben.bencode(torrent_file.info)).digest()
+        def __init__(track,torrent):
+            track.url = torrent.announce
+            track.info_hash = hash.sha1(ben.bencode(torrent.info)).digest()
             track.peer_id = b'-PR7070-'+bytes([randint(0,9) for _ in range(12)])
             track.user_port = 6881
             track.amount_uploaded = 0
             track.amount_downloaded = 0
-            track.left = torrent_file.length
+            track.left = torrent.length
             track.connected_peers = []
+            track.torrent = torrent
 
         def connect_with_tracker(track):
             track.parametrs = { #параметры для верного подключения
