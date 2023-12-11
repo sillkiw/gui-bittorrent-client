@@ -44,7 +44,7 @@ class Peer:
             print(f"Получено ответное сообщение \"HandShake\" от {pr.ip}")
             return True
         except Exception as e:
-            print(e.__str__())
+            print(e)
             #print(f"Пир {pr.ip} не отправил ответный Handshake message/ или допустил в нем ошибку")
             pr.alive = False
         return False
@@ -56,7 +56,7 @@ class Peer:
             print("Получение keepalive message")
             return True
         except Exception as e:
-            print(e.__str__())
+            print(e)
         return False
     
     def handle_choke(pr):
@@ -105,7 +105,7 @@ class Peer:
             if pr.handle_keep_alive():
                 continue
             #Получение первой части каждого сообщения <len>
-            message_len_, = unpack(">U",pr.answer_from_me[:messages.LEN])
+            message_len_, = unpack(">I",pr.answer_from_me[:messages.LEN])
             #Общий размер сообщения указаннный в <len> + 4 байта от самого <len>
             total_length = message_len_ + messages.LEN
 
