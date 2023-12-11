@@ -22,9 +22,9 @@ class winfoWindow(tk.Toplevel):
          winfo.iconbitmap("images/icon.ico")
         #Размеры всплывающего окна
          winfo.winfo_width = head.head_width // 3 #Ширина всплывающего окна
-         winfo.winfo_height = head.head_height // 2  - head.head_height//17 #Высота всплывающего окна
+         winfo.winfo_height = head.head_height - head.head_height//3 - head.head_height//12 #Высота всплывающего окна
         #Центрирование по центру главного окна(head)
-         winfo.geometry(f"{winfo.winfo_width}x{winfo.winfo_height}+{(head.head_width-winfo.winfo_width)//2}+{(head.head_height-winfo.winfo_height)//2}")
+         winfo.geometry(f"{winfo.winfo_width}x{winfo.winfo_height}+{(head.sc_width-winfo.winfo_width)//2}+{(head.sc_height-winfo.winfo_height-50)//2}")
         #Путь до торрент-файла выбранного пользователя 
          winfo.torrent_path = head.target_torrent.name
          winfo.direction,winfo.torrent_name = dividePrefix(winfo.torrent_path,"/")
