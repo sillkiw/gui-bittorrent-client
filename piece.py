@@ -1,3 +1,5 @@
+PIECE_SIZE = 20#(bytes) размер каждой части определен однозначно 
+
 
 class Piece:
     def __init__(pie,piece_index,piece_size,piece_hash):
