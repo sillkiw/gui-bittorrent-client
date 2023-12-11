@@ -1,6 +1,6 @@
 from messages import handshake_msg_to_bytes
 from threading import Thread
-import select
+import messages
 
 class PeerManager(Thread):
     def __init__(pmg,tracker):
@@ -27,10 +27,36 @@ class PeerManager(Thread):
                     continue 
                 
                 peer.read_buffer += payload
-                print(peer.read_buffer)
-                # for message in peer.unpack_messages():
-                #     pmg.answer_new_messages(message,peer)
-             
+            
+                for message in peer.unpack_messages():
+                    pmg.answer_new_messages(message,peer)
+
+    def answer_new_messages(message,peer):
+        message_id = message[1]
+        if message_id == messages.CHOKE_MESSAGE_ID:
+            peer.handle_choke()
+        elif message_id == messages.UNCHOKE_MESSAGE_ID:
+            peer.handel_unchoke()
+        elif message_id == messages.INTERESTED_MESSAGE_ID:
+            peer.handle_interested
+        elif message_id == messages.NOTINTERESTED_MESSAGE_ID:
+            peer.handle_not_interested
+        elif message_id == messages.HAVE_MESSAGE_ID:
+            peer.handle_have(message)
+        elif message_id == messages.BITFIELD_MESSAGE_ID:
+            peer.handle_bitfield(message)
+        elif message_id == messages.REQUEST_MESSAGE_ID:
+            peer.handle_request(message)
+        elif message_id == messages.PIECE_MESSAGE_ID:
+            peer.handle_piece(message)
+        elif message_id == messages.CANCEL_MESSAGE_ID:
+            peer.handle_cancel()
+        elif message_id == messages.PORT_MESSAGE_ID:
+            peer.handle_port()
+        else:
+            print("Ошибка! Неизвестное сообщение")
+
+
     def remove_peer(pmg,peer):
         try:
             peer.socket.close()
