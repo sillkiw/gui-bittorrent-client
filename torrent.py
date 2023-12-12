@@ -1,4 +1,4 @@
-import bencode as ben,math   #Библиотека для бенкодирования(используется в метафайлах торрента)
+import bencode as ben,math,os   #Библиотека для бенкодирования(используется в метафайлах торрента)
 from hurry.filesize import size,alternative
 from enum import Enum
 
@@ -14,6 +14,7 @@ class Torrent:
         tr.torrent_path = file_path
         #Имя торрента
         tr.name = name
+        tr.file_names = []
 
     #Чтение метаданных с метафайла
     def read_Metafile(tr):
@@ -31,17 +32,18 @@ class Torrent:
             tr.pieces = tr.info['pieces']
             if 'files' in tr.metainfo['info']:
                 #Имя главной папки
-                tr.name = tr.info['name']
+                tr.file_name = tr.info['name']
                 tr.files = tr.info['files']
                 #Тип файловой системы
                 tr.kind_file = Torrent._Kinds_of_file.MULTIPLE_FILE
                 #Общий размер
+                print(tr.files)
                 tr.length = 0
                 for file in tr.files:
                     tr.length += file['length']
             else:
                 #Имя единственного файла
-                tr.name = tr.info['name']
+                tr.file_name = tr.info['name']
                 #Тип файловой системы
                 tr.kind_file = Torrent._Kinds_of_file.SINGLE_FILE
                 #Размер файла
@@ -49,7 +51,25 @@ class Torrent:
             tr.number_of_pieces = math.ceil(tr.length/tr.piece_length)
             #Представление размера файлов в красивом виде    
             tr.size =  size(tr.length,system=alternative)
-  
-    
-                    
+    '''
+    def init_files(tr):
+        root = tr.metainfo['info']['name']
+
+        if tr.kind_file == Torrent._Kinds_of_file.MULTIPLE_FILE:
+            if not os.path.exists(root):
+                os.mkdir(root, 0o0766 )
+
+            for file in tr.files:
+                path_file = os.path.join(root, *file["path"])
+
+                if not os.path.exists(os.path.dirname(path_file)):
+                    os.makedirs(os.path.dirname(path_file))
+
+                tr.file_names.append({"path": path_file , "length": file["length"]})
+                tr.total_length += file["length"]
+
+        else: #SINGLE_FILE
+            tr.file_names.append({"path": root , "length": tr.torrent_file['info']['length']})
+            tr.total_length = tr.torrent_file['info']['length']
+    '''            
            
