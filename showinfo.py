@@ -51,7 +51,7 @@ class winfoWindow(tk.Toplevel):
          winfo.file_button = ttk.Button(winfo.file_frame,text = winfo.direction,width = winfo.winfo_width//13,image=winfo.file_photo,compound="left",style='Heading.TButton',command=winfo.change_destination)
          winfo.file_button.pack(anchor="sw",padx=20)
         #Обзорщик файловой системы торрента
-         winfo.file_system = ttk.Treeview(winfo,show="headings")
+         winfo.file_system = ttk.Treeview(winfo,selectmode='extended')
          winfo.set_file_system()
         #Инициализация торрента в виде объкта
          winfo.torrent = Torrent(winfo.torrent_path,winfo.torrent_name)
@@ -116,12 +116,12 @@ class winfoWindow(tk.Toplevel):
     def set_file_system(winfo):
         winfo.file_system['columns'] = ("File","Type","Size")
         #Инициализация столбцов
-        winfo.file_system.column("#0")
-        winfo.file_system.column("File",anchor = "w",width=200,minwidth = 200)
-        winfo.file_system.column("Type",anchor="w",width=70,minwidth = 70)
-        winfo.file_system.column("Size",anchor="w",width=120,minwidth=120)
+        winfo.file_system.column("#0",anchor = "e",width=1)
+        winfo.file_system.column("File",anchor = "w",width=150,minwidth = 50)
+        winfo.file_system.column("Type",anchor="w",width=90,minwidth = 50)
+        winfo.file_system.column("Size",anchor="w",width=90,minwidth=50)
         #Инициализация строк
-        winfo.file_system.heading("#0")
+        winfo.file_system.heading("#0",anchor="e")
         winfo.file_system.heading("File",text="File",anchor="w")
         winfo.file_system.heading("Type",text="Type",anchor="w")
         winfo.file_system.heading("Size",text="Size",anchor="w")
@@ -133,7 +133,7 @@ class winfoWindow(tk.Toplevel):
         #Проверка типа файла 
         if winfo.torrent.kind_file == Torrent._Kinds_of_file.SINGLE_FILE:
             #Имя одного файла
-            name_of_one_file = winfo.torrent.info['name']
+            name_of_one_file = winfo.torrent.file_name
             #Разделение на имя и на тип файла
             winfo.name,winfo.type = dividePrefix(name_of_one_file,".")
             #Общий размер = размер одного файла
@@ -141,8 +141,39 @@ class winfoWindow(tk.Toplevel):
             #Вставка в обзорщик файловой системы
             winfo.file_system.insert(parent="",index = "end",values = (winfo.name,"."+winfo.type,winfo.size))
         elif winfo.torrent.kind_file == Torrent._Kinds_of_file.MULTIPLE_FILE:
-            pass
-
+            files = []
+            files.append({"hash":winfo.torrent.file_name.__hash__(),"children":0})
+            winfo.file_system.insert(parent='',index = "end",iid = files[0]["hash"],values=(winfo.torrent.file_name,"",winfo.torrent.size),open=False)
+        
+            for file in winfo.torrent.files:
+                current = file['path']
+                if len(current) > 1:
+                    recur = 1
+                    insert_in_last =False
+                    for file in current:
+                        if insert_in_last:
+                            file_hash = file.__hash__()+recur
+                            winfo.file_system.insert('',index = "end",iid = file_hash,values=(file,"",""),open=False)
+                            winfo.file_system.move(file_hash,files[recur]["hash"],files[recur]["children"])
+                            files[recur]["children"]+=1
+                            insert_in_last = False
+                            continue
+                        try:
+                            file_hash = file.__hash__()+recur
+                            winfo.file_system.insert('',index = "end",iid = file_hash,values = (file,"",""),open=False)
+                            files.append({"hash":file_hash,"children":0})
+                            winfo.file_system.move(files[recur]["hash"],files[recur-1]["hash"],files[recur-1]["children"])
+                            files[recur-1]["children"] += 1
+                            recur+=1
+                        except Exception as e:
+                            insert_in_last = True
+                            continue
+                           
+                else:
+                    file_hash = current[0].__hash__()
+                    winfo.file_system.insert('',index = "end",iid = file_hash,values=(current[0],"",""),open=False)
+                    winfo.file_system.move(file_hash,files[0]['hash'],files[0]['children'])
+                    files[0]['children'] += 1
 
 #Вспомогательная функция для разделения префикса 
 def dividePrefix(path,sym):
