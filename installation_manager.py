@@ -17,6 +17,7 @@ class Installation_MNG(multiprocessing.Process):
     def run(imng):
         imng.initialize_tracker_and_peer_manager()
         imng.to_head.send(imng.tracker.amount_of_connected_peers)
+        
     def initialize_tracker_and_peer_manager(imng):
         imng.tracker.connect_with_tracker()
         imng.peer_mng = PeerManager(imng.tracker)
