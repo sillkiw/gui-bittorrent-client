@@ -85,7 +85,7 @@ class Peer:
     
     def handle_unchoke(pr):
         print(f"Получение сообщения Unchoke от {pr.ip}")
-        pr.state['peer_choking'] = True
+        pr.state['peer_choking'] = False
     
     def handle_interested(pr):
         print(f"Получение сообщения Interested от {pr.ip}")
@@ -120,12 +120,11 @@ class Peer:
             pr.sent_message(interested)
             pr.state['am_interested'] = True
     
+    def has_piece(pr,index):
+        return pr.bitfield[index]
 
     def handle_request(pr,request):
         print(f"Получение сообщения Request от {pr.ip}")
-    
-    def handle_piece(pr,message):
-        print(f"Получение сообщения Piece от {pr.ip}")
     
     def handle_cancel(pr,request):
         print(f"Получение сообщения Cancel от {pr.ip}")
