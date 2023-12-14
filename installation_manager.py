@@ -27,16 +27,15 @@ class Installation_MNG(multiprocessing.Process):
                 continue
             for piece in imng.piece_mng.pieces:
                 index = piece.piece_index
-
                 if imng.peer_mng.pieces[index].is_full:
                     continue
-                
+    
                 peer = imng.peer_mng.get_peer_having_piece(index)
-
                 if not peer:
                     continue
-
                 
+                
+
 
 
 
