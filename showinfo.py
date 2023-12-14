@@ -55,6 +55,7 @@ class winfoWindow(tk.Toplevel):
          winfo.file_button = ttk.Button(winfo.file_frame,text = winfo.direction,width = winfo.winfo_width//13,image=winfo.file_photo,compound="left",style='Heading.TButton',command=winfo.change_destination)
          winfo.file_button.pack(anchor="sw",padx=20)
          winfo.torrent = Torrent(winfo.torrent_path,winfo.torrent_name)
+         winfo.torrent = winfo.direction
         #Обзорщик файловой системы торрента
          winfo.file_system_frame = ttk.Frame(winfo)
          winfo.file_system_frame.pack(pady=10)
@@ -92,7 +93,6 @@ class winfoWindow(tk.Toplevel):
         #Пользователь согласился на установку
         winfo.state_of_answer = winfoWindow._States_of_answer.T_OPENED
         #Закрытие окна
-        winfo.torrent.init_files(winfo.direction)
         winfo.grab_release()
         winfo.destroy()
     
@@ -109,6 +109,7 @@ class winfoWindow(tk.Toplevel):
         winfo.direction,winfo.torrent_name = dividePrefix(winfo.torrent_path,"/")
         winfo.source_button.config(text = winfo.torrent_name)
         winfo.torrent = Torrent(winfo.torrent_path,winfo.torrent_name)
+        winfo.torrent.direction = winfo.direction
         #Удаление файловой системы предыдущего торрента
         for file in winfo.file_system.get_children():
             winfo.file_system.delete(file)
@@ -122,6 +123,7 @@ class winfoWindow(tk.Toplevel):
         target_destination = fd.askdirectory(parent=winfo,initialdir=winfo.direction)
         #Изменение предыдущих значений
         winfo.direction = target_destination
+        winfo.torrent = target_destination
         winfo.file_button.config(text=winfo.direction)
 
 
