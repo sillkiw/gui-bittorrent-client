@@ -4,7 +4,7 @@ BLOCK_SIZE = 2 ** 14
 
 
 class State(Enum):  
-    Free,Pending,Full = range(1,3)
+    FREE,PEDNING,FULL = range(0,3)
 
 
 class Block():
