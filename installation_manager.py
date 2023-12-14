@@ -8,8 +8,11 @@ class Installation_MNG(multiprocessing.Process):
     def __init__(imng,torrent,to_head):
         multiprocessing.Process.__init__(imng)
         #Инициализация трекера
+        imng.torrent = torrent
+        imng.torrent.init_files()
         imng.tracker = Tracker(torrent)
         imng.piece_mng = PieceManager(torrent)
+       
         #Pipe c head
         imng.to_head = to_head
 
