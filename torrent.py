@@ -34,6 +34,7 @@ class Torrent:
                 #Имя главной папки
                 tr.file_name = tr.info['name']
                 tr.files = tr.info['files']
+                tr.files2 = tr.info['files']
                 #Тип файловой системы
                 tr.kind_file = Torrent._Kinds_of_file.MULTIPLE_FILE
                 #Общий размер
@@ -44,6 +45,7 @@ class Torrent:
             else:
                 #Имя единственного файла
                 tr.file_name = tr.info['name']
+                tr.files = None
                 #Тип файловой системы
                 tr.kind_file = Torrent._Kinds_of_file.SINGLE_FILE
                 #Размер файла
@@ -51,5 +53,21 @@ class Torrent:
             tr.number_of_pieces = math.ceil(tr.length/tr.piece_length)
             #Представление размера файлов в красивом виде    
             tr.size =  size(tr.length,system=alternative)
-   
+
+    def init_files(tr,direction):
+        root = direction.replace("/","\\")+"\\"+tr.file_name
+        if tr.files:
+            if not os.path.exists(root):
+                os.mkdir(root, 0o0766 )
+
+            for file in tr.files:
+                path_file = os.path.join(root, *file["path"])
+
+                if not os.path.exists(os.path.dirname(path_file)):
+                    os.makedirs(os.path.dirname(path_file))
+
+                tr.file_names.append({"path": path_file , "length": file["length"]})
+        else:
+            tr.file_names.append({"path": root , "length": tr.metainfo['info']['length']})
+        
     
