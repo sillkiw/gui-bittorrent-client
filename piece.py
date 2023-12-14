@@ -6,3 +6,5 @@ class Piece:
         pie.piece_index = piece_index
         pie.piece_size = piece_size 
         pie.piece_hash = piece_hash
+        pie.related_files = []
+        pie.is_full = False
