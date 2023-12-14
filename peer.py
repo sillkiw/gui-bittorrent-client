@@ -30,6 +30,12 @@ class Peer:
             return False
         return  True
     
+    def is_choking(pr):
+        return pr.state['peer_choking']
+
+    def is_unchoked(pr):
+        return not pr.is_choking()
+
     def sent_message(pr,msg):
         try:
             pr.socket.send(msg)
