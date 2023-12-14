@@ -55,7 +55,7 @@ class winfoWindow(tk.Toplevel):
          winfo.file_button = ttk.Button(winfo.file_frame,text = winfo.direction,width = winfo.winfo_width//13,image=winfo.file_photo,compound="left",style='Heading.TButton',command=winfo.change_destination)
          winfo.file_button.pack(anchor="sw",padx=20)
          winfo.torrent = Torrent(winfo.torrent_path,winfo.torrent_name)
-         winfo.torrent = winfo.direction
+         winfo.torrent.direction = winfo.direction
         #Обзорщик файловой системы торрента
          winfo.file_system_frame = ttk.Frame(winfo)
          winfo.file_system_frame.pack(pady=10)
@@ -210,8 +210,6 @@ def create_file_system(dir_name,dir_size,files,name_and_size):
         len_of_path = len(path)
         if len_of_path > 1:
             name_of_folder = path.pop(0)
-            if name_of_folder == '[Sotark] Naruto Shippuden [480p][720p][HEVC][x265][Dual-Audio]':
-                print('a)')
             if name_of_folder in name_and_size.keys():
                 name_and_size[name_of_folder] += size
                 folder  = file_system.get_node(name_of_folder)
