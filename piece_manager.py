@@ -1,5 +1,5 @@
 from bitstring import BitArray
-import piece
+from piece import Piece,PIECE_LEN
 
 class PieceManager:
     def __init__(piemng,torrent):
@@ -19,16 +19,32 @@ class PieceManager:
         index_of_last_pie = piemng.number_of_pieces - 1
 
         for pie_index in range(piemng.number_of_pieces):
-            start = pie_index*piece.PIECE_SIZE
-            end = start+piece.PIECE_SIZE
+            start = pie_index*PIECE_LEN
+            end = start+PIECE_LEN
 
-            #последняя часть имеет не фиксированный размер
+            #последняя часть имеет не фиксированный размер, определенный в метафайле
             if pie_index == index_of_last_pie:
                 last_pie_length = piemng.torrent.length - (piemng.number_of_pieces) * piemng.torrent.piece_length
-                piemng.pieces.append(piece.Piece(pie_index,last_pie_length,piemng.torrent.pieces[start:end]))
+                piemng.pieces.append(Piece(pie_index,last_pie_length,piemng.torrent.pieces[start:end]))
             else:
-                piemng.pieces.append(piece.Piece(pie_index,piemng.torrent.piece_length,piemng.torrent.pieces[start:end])) 
+                piemng.pieces.append(Piece(pie_index,piemng.torrent.piece_length,piemng.torrent.pieces[start:end])) 
     
+    def handle_piece(piemng,piece_message):
+        piece_index = piece_message['index']
+        block_offset = piece_message['begin']
+        block_data = piece_message['block']
+
+        if piemng.pieces[piece_index].is_full:
+            return
+        
+        piemng.pieces[piece_index].fill_block(block_offset,block_data)
+
+        if piemng.pieces[piece_index].all_blocks_full():
+            if piemng.pieces[piece_index].set_to__full():
+                piemng.complete_pieces += 1
+
+ 
+
     def all_pieces_full(piemng):
         for piece in piemng.pieces:
             if not piece.is_full:
