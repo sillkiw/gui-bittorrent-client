@@ -91,3 +91,9 @@ class PeerManager(Thread):
             return True
         except Exception as e:
             print(f"Handshake error with {peer.ip}")
+    
+    def has_unchoked_peers(pmg):
+        for peer in pmg.peers:
+            if peer.is_unchoked():
+                return True
+        return False
