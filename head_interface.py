@@ -66,7 +66,9 @@ class HeadWindow(tk.Tk): #главное окно
         head.wait_window(head.torrent_show)
         if head.torrent_show.state_of_answer == winfoWindow._States_of_answer.T_OPENED:
                 #Добавление выбранного торрента в список торрентов 
+          
                 head.torrent_list.append(head.torrent_show.torrent) 
+                
                 #Инициализация и начала установки
                 head.initalize_installation()
     
@@ -94,25 +96,16 @@ class HeadWindow(tk.Tk): #главное окно
 
     #Обзорщик установок
     def fill_viewer_collums(head):
-        head.viewer['columns'] = ("Name","Size","Progress","Status","Peers","Speed","Ratio")
-        #Инициализация столбцов
+        columns =  ["Name","Size","Progress","Status","Peers","Speed","Ratio"]
+        head.viewer['columns'] = tuple(columns)
         head.viewer.column("#0")
-        head.viewer.column("Name",anchor = "w",width=200,minwidth = 200)
-        head.viewer.column("Size",anchor="w",width=70,minwidth = 70)
-        head.viewer.column("Progress",anchor="w",width=70,minwidth = 70)
-        head.viewer.column("Status",anchor="w",width=70,minwidth = 70)
-        head.viewer.column("Peers",anchor="w",width=70,minwidth = 70)
-        head.viewer.column("Speed",anchor="w",width=70,minwidth = 70)
-        head.viewer.column("Ratio",anchor="w",width=70,minwidth = 70)
-        #Инициализация строк
         head.viewer.heading("#0")
-        head.viewer.heading("Name",text="Name",anchor="w")
-        head.viewer.heading("Size",text="Size",anchor="w")
-        head.viewer.heading("Progress",text="Progress",anchor="w")
-        head.viewer.heading("Status",text="Status",anchor="w")
-        head.viewer.heading("Peers",text="Peers",anchor="w")
-        head.viewer.heading("Speed",text="Speed",anchor="w")
-        head.viewer.heading("Ratio",text="Ratio",anchor="w") 
+        for inf in columns:
+            #Инициализация столбцов
+            head.viewer.column(inf,anchor = "w")
+            #Инициализация строк
+            head.viewer.heading(inf,text = inf,anchor = "w")
+ 
 
 if __name__ == "__main__":
     window = HeadWindow()
