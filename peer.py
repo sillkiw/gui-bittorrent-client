@@ -1,6 +1,7 @@
 import socket,messages
 from struct import pack,unpack
 from bitstring import BitArray
+import time
 
 class Peer:
     def __init__(pr,ip,port,tracker):
@@ -11,6 +12,7 @@ class Peer:
         pr.was_handshake = False
         pr.socket = None
         pr.alive =False
+        pr.last_call = 0.0
         pr.bitfield = BitArray(pr.tracker.torrent.number_of_pieces)
         #Начальные значения состояний подключения по спецификации таие
         pr.state = {
@@ -30,6 +32,16 @@ class Peer:
             return False
         return  True
     
+    def is_open(pr):
+        now = time.time()
+        return (now - pr.last_call) > 0.3
+
+    def am_interested(pr):
+        return pr.state['am_interested']
+    
+    def am_choking(pr):
+        return pr.state['am_choking']
+
     def is_choking(pr):
         return pr.state['peer_choking']
 
@@ -39,6 +51,7 @@ class Peer:
     def sent_message(pr,msg):
         try:
             pr.socket.send(msg)
+            pr.last_call = time.time()
         except Exception as e:
             pr.alive = False
             print("Failed to send to peer : %s" % e.__str__())
@@ -78,8 +91,8 @@ class Peer:
         print(f"Получение сообщения Interested от {pr.ip}")
         pr.state['peer_interested'] = True
         
-        if pr.state['am_choking']:
-            unchoke = messages.choke_msg_to_bytes()
+        if pr.am_choking():
+            unchoke = messages.unchoke_msg_to_bytes()
             pr.sent_message(unchoke)
 
     def handle_not_interested(pr):
@@ -90,7 +103,7 @@ class Peer:
         print(f"Получение сообщения Have от {pr.ip}")
         pr.bitfield[message_have['piece_index']] = True
 
-        if pr.state['peer_choking'] and not pr.state['am_interested']:
+        if pr.is_choking() and not pr.am_interested():
             interested = messages.interested_msg_to_bytes()
             print(f"Отправка сообщения Interested к {pr.ip}")
             pr.sent_message(interested)
@@ -101,7 +114,7 @@ class Peer:
         print(f"Получение сообщения Bitfield от {pr.ip}")
         pr.bitfield = message_bitfield['bitfield']
         
-        if pr.state['peer_choking'] and not pr.state['am_interested']:
+        if pr.is_choking() and not pr.am_interested():
             interested = messages.interested_msg_to_bytes()
             print(f"Отправка сообщения Interested к {pr.ip}")
             pr.sent_message(interested)
