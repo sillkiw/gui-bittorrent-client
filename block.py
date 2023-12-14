@@ -13,6 +13,3 @@ class Block():
         self.block_size = block_size
         self.data = data
         self.last_seen = last_seen
-
-    def __str__(self):
-        return "%s - %d - %d - %d" % (self.state, self.block_size, len(self.data), self.last_seen)
