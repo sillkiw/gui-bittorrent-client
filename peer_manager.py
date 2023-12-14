@@ -92,6 +92,12 @@ class PeerManager(Thread):
         except Exception as e:
             print(f"Handshake error with {peer.ip}")
     
+    def get_peer_having_piece(pmg,index):
+        exact_peers = [] 
+        for peer in pmg.peers:
+            if peer.is_open() and  peer.is_unchoked() and peer.am_interested() and peer.has_piece(index):
+                return peer
+        return None
     def has_unchoked_peers(pmg):
         for peer in pmg.peers:
             if peer.is_unchoked():
