@@ -15,7 +15,7 @@ class Torrent:
         #Имя торрента
         tr.name = name
         tr.file_names = []
-
+        tr.direction = None
     #Чтение метаданных с метафайла
     def read_Metafile(tr):
         #Открытие торрент-файла
@@ -54,8 +54,8 @@ class Torrent:
             #Представление размера файлов в красивом виде    
             tr.size =  size(tr.length,system=alternative)
 
-    def init_files(tr,direction):
-        root = direction.replace("/","\\")+"\\"+tr.file_name
+    def init_files(tr):
+        root = tr.direction.replace("/","\\")+"\\"+tr.file_name
         if tr.files:
             if not os.path.exists(root):
                 os.mkdir(root, 0o0766 )
