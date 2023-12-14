@@ -7,7 +7,9 @@ from hurry.filesize import size
 from hurry.filesize import alternative
 from enum import Enum
 from treelib import Node,Tree
+from copy import deepcopy
 import os
+
 
 class winfoWindow(tk.Toplevel):
     
@@ -52,13 +54,17 @@ class winfoWindow(tk.Toplevel):
          winfo.file_photo = winfo.file_photo.subsample(5,8)
          winfo.file_button = ttk.Button(winfo.file_frame,text = winfo.direction,width = winfo.winfo_width//13,image=winfo.file_photo,compound="left",style='Heading.TButton',command=winfo.change_destination)
          winfo.file_button.pack(anchor="sw",padx=20)
-        #Обзорщик файловой системы торрента
-         winfo.file_system = ttk.Treeview(winfo)
-         winfo.set_file_system()
-        #Инициализация торрента в виде объкта
          winfo.torrent = Torrent(winfo.torrent_path,winfo.torrent_name)
+        #Обзорщик файловой системы торрента
+         winfo.file_system_frame = ttk.Frame(winfo)
+         winfo.file_system_frame.pack(pady=10)
+         winfo.vsb = ttk.Scrollbar(winfo.file_system_frame)
+         winfo.vsb.pack(side = tk.RIGHT,fill=tk.Y)
+         winfo.file_system = ttk.Treeview(winfo.file_system_frame,yscrollcommand=winfo.vsb.set)
+         winfo.set_file_system()
          winfo.fill_the_table()
-         winfo.file_system.pack(pady = 10) 
+         winfo.vsb.config(command=winfo.file_system.yview)
+         winfo.file_system.pack() 
         #Пользователь еще ничего не нажал
          winfo.state_of_answer = winfoWindow._States_of_answer.U_THINKING
          winfo.answer_frame = tk.Frame(winfo)
@@ -86,32 +92,11 @@ class winfoWindow(tk.Toplevel):
         #Пользователь согласился на установку
         winfo.state_of_answer = winfoWindow._States_of_answer.T_OPENED
         #Закрытие окна
-        winfo.init_files()
+        winfo.torrent.init_files(winfo.direction)
         winfo.grab_release()
         winfo.destroy()
     
-    def init_files(winfo):
-        winfo.torrent.read_Metafile()
-        torrent = winfo.torrent
-        root = winfo.direction+"/"+torrent.metainfo['info']['name']
-
-        if torrent.kind_file == Torrent._Kinds_of_file.MULTIPLE_FILE:
-            if not os.path.exists(root):
-                os.mkdir(root, 0o0766 )
-
-            for file in torrent.files:
-                a = file['path']
-                for fl in file['path']:
-                    path = "/"+fl
-                    path_file = root + path
-
-                    if not os.path.exists(path_file):
-                        os.mkdir(path_file,0o0766)
-
-                    torrent.file_names.append({"path": path_file , "length": file["length"]})
-
-        else: #SINGLE_FILE
-            torrent.file_names.append({"path": root , "length": torrent.metainfo['info']['length']})
+   
             
            
     
@@ -142,15 +127,12 @@ class winfoWindow(tk.Toplevel):
 
     #Установка столбцов и строк для файловой системы
     def set_file_system(winfo):
-        columns = [{'info':'Type', 'size':winfo.winfo_width//5},{'info':'Size', 'size':winfo.winfo_width//5}]
-        winfo.file_system['columns'] = tuple(column['info'] for column in columns)
-        winfo.file_system.column("#0",width=winfo.winfo_width//2)
-        winfo.file_system.heading("#0",text="File",anchor="w")
-        for column in columns:
-            #Инициализация столбцов
-            winfo.file_system.column(column['info'],anchor = "w",width = column['size'])
-            #Инициализация строк
-            winfo.file_system.heading(column['info'],text = column['info'],anchor = "w")
+        winfo.file_system['columns'] = ('Size')
+        winfo.file_system.column("#0",anchor='w',width=winfo.winfo_width//2+winfo.winfo_width//5)
+        winfo.file_system.column('Size',anchor='center',width=winfo.winfo_width//6)
+        winfo.file_system.heading("#0",text="Name",anchor="w")
+        winfo.file_system.heading('Size',text = 'Size',anchor = "w")
+
             
     
         
@@ -163,29 +145,30 @@ class winfoWindow(tk.Toplevel):
             #Имя одного файла
             name_of_one_file = winfo.torrent.file_name
             #Разделение на имя и на тип файла
-            winfo.name,winfo.type = dividePrefix(name_of_one_file,".")
             #Общий размер = размер одного файла
             winfo.size = winfo.torrent.size
             #Вставка в обзорщик файловой системы
-            winfo.file_system.insert(parent="",index = "end",text= winfo.name,values = ("."+winfo.type,winfo.size))
+            r = winfo.size
+            winfo.file_system.insert(parent="",index = "end",text= name_of_one_file,values = [r])
         elif winfo.torrent.kind_file == Torrent._Kinds_of_file.MULTIPLE_FILE:
            name_and_size = {}
-           file_table = create_file_system(winfo.torrent.file_name,winfo.torrent.length,winfo.torrent.files,name_and_size)
+           all = deepcopy(winfo.torrent.files2)
+           file_table = create_file_system(winfo.torrent.file_name,winfo.torrent.length,all,name_and_size)
            file_table = file_table.to_dict()
            children = file_table[winfo.torrent.file_name]['children']
            id = {"folder":1,"file":-1}
-           winfo.file_system.insert('','end',text = winfo.torrent.file_name,iid = id["folder"],values=("",convert(name_and_size[winfo.torrent.file_name])) )
+           winfo.file_system.insert('','end',text = winfo.torrent.file_name,iid = id["folder"],values=[convert(name_and_size[winfo.torrent.file_name])],open=True)
            id['folder']+=1
            for file in children:
                if isinstance(file,dict):
                    name = list(file.keys())[0]
                    children = file[name]['children']
-                   winfo.file_system.insert('','end',text = name,iid = id["folder"],values=("",convert(name_and_size[name])))
-                   winfo.file_system.move(id["folder"],id["folder"]-1,1000000)
+                   winfo.file_system.insert('','end',text = name,iid = id["folder"],values=[convert(name_and_size[name])])
+                   winfo.file_system.move(id["folder"],1,1000000)
                    id["folder"] += 1
                    winfo.cont(children,id,name_and_size)
                else:
-                   winfo.file_system.insert('','end',text = file,iid = id["file"],values=("",convert(name_and_size[file])))
+                   winfo.file_system.insert('','end',text = file,iid = id["file"],values=[convert(name_and_size[file])])
                    winfo.file_system.move(id["file"],1,1000000)
                    id["file"] -= 1
                    
@@ -194,12 +177,12 @@ class winfoWindow(tk.Toplevel):
             if isinstance(child,dict):
                 name = list(children_next.keys())[0]
                 children_next = child[name]['children']
-                winfo.file_system.insert('','end',iid  = id["folder"],text = name,values=("",convert(name_and_size[name])))
+                winfo.file_system.insert('','end',iid  = id["folder"],text = name,values=[convert(name_and_size[name])])
                 winfo.file_system.move(id["folder"],id["folder"]-1,10000)
                 id["folder"] += 1
                 winfo.cont(children_next,id,name_and_size)
             else:
-                    winfo.file_system.insert('','end',iid = id["file"],text = child,values=("",convert(name_and_size[child])))
+                    winfo.file_system.insert('','end',iid = id["file"],text = child,values=[convert(name_and_size[child])])
                     winfo.file_system.move(id["file"],id["folder"]-1,1000000)
                     id["file"] -= 1
                     
@@ -225,13 +208,15 @@ def create_file_system(dir_name,dir_size,files,name_and_size):
         len_of_path = len(path)
         if len_of_path > 1:
             name_of_folder = path.pop(0)
+            if name_of_folder == '[Sotark] Naruto Shippuden [480p][720p][HEVC][x265][Dual-Audio]':
+                print('a)')
             if name_of_folder in name_and_size.keys():
                 name_and_size[name_of_folder] += size
                 folder  = file_system.get_node(name_of_folder)
             else:
                 name_and_size[name_of_folder] = size
                 folder = file_system.create_node(name_of_folder,name_of_folder,parent=root)
-            new = untill_file(path,size,folder,len_of_path-1,name_and_size,file_system)
+            file_system = untill_file(path,size,folder,len_of_path-1,name_and_size,file_system)
         else:
             file_name = path[0]
             file_system.create_node(file_name,parent=root,data=size)
@@ -242,7 +227,8 @@ def untill_file(path,size,folder,len_of_path,name_and_size,file_system):
     if len_of_path == 1:
         name = path.pop(0)
         name_and_size[name] = size
-        return file_system.create_node(name,name,parent=folder)
+        file_system.create_node(name,name,parent=folder)
+        return file_system
     else:
         name = path.pop(0)
         if name in name_and_size.keys():
@@ -250,4 +236,4 @@ def untill_file(path,size,folder,len_of_path,name_and_size,file_system):
         else:
             name_and_size[name] = size
         nfolder = file_system.create_node(name,name,parent=folder)
-        return untill_file(path,size,nfolder,len_of_path-1,name_and_size)
+        untill_file(path,size,nfolder,len_of_path-1,name_and_size)
