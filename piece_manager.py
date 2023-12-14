@@ -9,6 +9,9 @@ class PieceManager:
         piemng.initialize_pieces()
         piemng.complete_pieces = 0
         piemng._load_files()
+        for file in piemng.files:
+            id_piece = file['idPiece']
+            piemng.pieces[id_piece].related_files.append(file)
     
     def initialize_pieces(piemng):
         piemng.pieces = []
@@ -26,6 +29,12 @@ class PieceManager:
             else:
                 piemng.pieces.append(piece.Piece(pie_index,piemng.torrent.piece_length,piemng.torrent.pieces[start:end])) 
     
+    def all_pieces_full(piemng):
+        for piece in piemng.pieces:
+            if not piece.is_full:
+                return False
+        return True
+
     def _load_files(piemng):
         piemng.files = []
         piece_offset = 0
@@ -64,3 +73,4 @@ class PieceManager:
                     piece_size_used = 0
 
                 piemng.files.append(file)
+               
