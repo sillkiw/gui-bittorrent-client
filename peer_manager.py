@@ -1,7 +1,7 @@
 from messages import handshake_msg_to_bytes
 from threading import Thread
 import messages
-
+from random import choice
 class PeerManager(Thread):
     def __init__(pmg,tracker):
         Thread.__init__(pmg)
@@ -56,7 +56,8 @@ class PeerManager(Thread):
         elif message_id == messages.REQUEST_MESSAGE_ID:
             peer.handle_request(message)
         elif message_id == messages.PIECE_MESSAGE_ID:
-            peer.handle_piece(message)
+            print(f"Получение сообщения 'Piece' от {peer.ip}")
+            pmg.piece_mng.handle_piece(message)
         elif message_id == messages.CANCEL_MESSAGE_ID:
             peer.handle_cancel()
         elif message_id == messages.PORT_MESSAGE_ID:
@@ -96,10 +97,14 @@ class PeerManager(Thread):
         exact_peers = [] 
         for peer in pmg.peers:
             if peer.is_open() and  peer.is_unchoked() and peer.am_interested() and peer.has_piece(index):
-                return peer
-        return None
+                exact_peers.append(peer)
+        return choice(exact_peers) if exact_peers else None
+    
     def has_unchoked_peers(pmg):
         for peer in pmg.peers:
             if peer.is_unchoked():
                 return True
         return False
+    
+    def get_on_well_piece_mng(pmg,piece_mng):
+        pmg.piece_mng = piece_mng
