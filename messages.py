@@ -345,6 +345,8 @@ def request_msg_from_bytes(payload):
             "begin":begin,
             "length":length }
 
+def request_msg_to_bytes(piece_index,block_offset,block_length):
+    return pack(">IBIII",REQUEST_PAYLOAD_LENGTH,REQUEST_MESSAGE_ID,piece_index,block_offset,block_length)
 #TODO: доделать объяснение
 
 '''
