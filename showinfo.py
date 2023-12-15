@@ -25,7 +25,7 @@ class winfoWindow(tk.Toplevel):
          winfo.title("Torrent File System ")
          winfo.iconbitmap("images/icon.ico")
         #Размеры всплывающего окна
-         winfo.winfo_width = head.head_width // 3 #Ширина всплывающего окна
+         winfo.winfo_width = head.head_width // 2 - head.head_width//9 #Ширина всплывающего окна
          winfo.winfo_height = head.head_height - head.head_height//3 - head.head_height//12 #Высота всплывающего окна
         #Центрирование по центру главного окна(head)
          winfo.geometry(f"{winfo.winfo_width}x{winfo.winfo_height}+{(head.sc_width-winfo.winfo_width)//2}+{(head.sc_height-winfo.winfo_height-50)//2}")
