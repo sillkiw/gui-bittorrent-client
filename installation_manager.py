@@ -2,6 +2,7 @@ from tracker import Tracker
 from peer_manager import PeerManager
 from tracker import Tracker
 from piece_manager import PieceManager
+from block import State
 import multiprocessing,time,messages
 
 class Installation_MNG(multiprocessing.Process):
@@ -12,6 +13,7 @@ class Installation_MNG(multiprocessing.Process):
         imng.tracker = Tracker(torrent)
         #Pipe c head
         imng.to_head = to_head
+        imng.progress = 0
 
     #Переопределение метода run в Process
     def run(imng):
@@ -22,8 +24,8 @@ class Installation_MNG(multiprocessing.Process):
         imng.initialize_tracker_and_peer_manager()
         imng.peer_mng.get_on_well_piece_mng(imng.piece_mng)
         imng.peer_mng.start()
-
-        imng.to_head.send(imng.tracker.amount_of_connected_peers)
+    
+        imng.to_head.send(('0%','Downloading',f'0({imng.tracker.amount_of_connected_peers})'))
 
         while not imng.piece_mng.all_pieces_full():
             if not imng.peer_mng.has_unchoked_peers():
@@ -47,10 +49,23 @@ class Installation_MNG(multiprocessing.Process):
                 piece_index,block_offset,block_length = block_data  
                 request_msg = messages.request_msg_to_bytes(piece_index,block_offset,block_length)
                 peer.sent_message(request_msg)
-                print(f"Отправление сообщение Request на блок части с индексом {piece_index} к {peer.ip}")
+            imng.display_progress()
 
-            time.sleep(0.1)    
+            time.sleep(0.1)  
+        imng.display_progress(status = 'Finished')
+        imng.close()
+    def display_progress(imng,status = 'Downloading'):
+        update_progression = 0
+        for i in range(imng.piece_mng.number_of_pieces):
+            for j in range(imng.piece_mng.pieces[i].number_of_blocks):
+                if imng.piece_mng.pieces[i].blocks[j].state == State.FULL:
+                    update_progression += len(imng.piece_mng.pieces[i].blocks[j].data)
+        
+        number_of_active_peers = imng.peer_mng.count_unchoked_peers()
+        number_of_inactive_peers = len(imng.peer_mng.peers) - number_of_active_peers
+        percentage_completed = round(float((float(update_progression)/imng.torrent.length) * 100),2)
 
+        imng.to_head.send((str(percentage_completed)+"%",status,f'{number_of_active_peers}({number_of_inactive_peers})'))
 
 
     def initialize_tracker_and_peer_manager(imng):
