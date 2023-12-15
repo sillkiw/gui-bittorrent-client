@@ -24,23 +24,23 @@ class PieceManager:
 
             #последняя часть имеет не фиксированный размер, определенный в метафайле
             if pie_index == index_of_last_pie:
-                last_pie_length = piemng.torrent.length - (piemng.number_of_pieces) * piemng.torrent.piece_length
+                last_pie_length = piemng.torrent.length - (piemng.number_of_pieces-1) * piemng.torrent.piece_length
                 piemng.pieces.append(Piece(pie_index,last_pie_length,piemng.torrent.pieces[start:end]))
             else:
                 piemng.pieces.append(Piece(pie_index,piemng.torrent.piece_length,piemng.torrent.pieces[start:end])) 
     
     def handle_piece(piemng,piece_message):
-        piece_index = piece_message['index']
+        piece_index = piece_message['piece_index']
         block_offset = piece_message['begin']
         block_data = piece_message['block']
 
         if piemng.pieces[piece_index].is_full:
             return
         
-        piemng.pieces[piece_index].fill_block(block_offset,block_data)
+        piemng.pieces[piece_index].put_to_block(block_offset,block_data)
 
         if piemng.pieces[piece_index].all_blocks_full():
-            if piemng.pieces[piece_index].set_to__full():
+            if piemng.pieces[piece_index].set_to_full():
                 piemng.complete_pieces += 1
 
  
