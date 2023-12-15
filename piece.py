@@ -1,4 +1,4 @@
-import math,time
+import math,time,hashlib
 from block import BLOCK_SIZE,Block,State
 
 PIECE_LEN = 20#(bytes) длина каждой части определен однозначно 
@@ -26,6 +26,12 @@ class Piece:
         else:
             pie.blocks.append(Block(block_size=int(pie.piece_size)))
     
+    def put_to_block(pie,offset,data):
+        index = int(offset / BLOCK_SIZE)
+        
+        if not pie.is_full and not pie.blocks[index].state == State.FULL:
+            pie.blocks[index].data = data
+            pie.blocks[index].state = State.FULL
     
     def set_to_full(pie):
         data = pie.merge_blocks()
@@ -54,7 +60,7 @@ class Piece:
                 print("Не получается записать файл")
                 return
             f.seek(file_offset)
-            f.write(pie.raw_data[piece_offset:piece_offset+legnth])
+            f.write(pie.data[piece_offset:piece_offset+legnth])
             f.close()
 
 
@@ -76,3 +82,18 @@ class Piece:
                 pie.blocks[i].last_seen = time.time()
                 block_offset = i * BLOCK_SIZE
                 return pie.piece_index, block_offset, pie.blocks[i].block_size
+    
+    def all_blocks_full(pie):
+        for block in pie.blocks:
+            if block.state == State.FREE or block.state == State.PEDNING:
+                return False
+        return True
+    
+    def check_blocks(pie,data):
+        hashed_raw_data = hashlib.sha1(data).digest()
+
+        if hashed_raw_data == pie.piece_hash:
+            return True
+        else:
+            print(f"Хеши не совпадают | запись части с индексом {pie.piece_index}")
+        return False
