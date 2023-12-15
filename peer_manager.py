@@ -2,9 +2,8 @@ from messages import handshake_msg_to_bytes
 from threading import Thread
 import messages
 from random import choice
-class PeerManager(Thread):
+class PeerManager():
     def __init__(pmg,tracker):
-        Thread.__init__(pmg)
         pmg.tracker = tracker
         pmg.peers = []
         pmg.handshake_message = handshake_msg_to_bytes(pmg.tracker.peer_id,pmg.tracker.info_hash)
@@ -21,12 +20,12 @@ class PeerManager(Thread):
         for peer in pmg.tracker.connected_peers:
             if pmg.handshake(peer):
                 pmg.peers.append(peer)
+                Thread(target=pmg.start_to_listen,args=(peer,)).start()
             else: 
                 print(f"Can't handshake with {peer.ip}")
 
-    def run(pmg):
+    def start_to_listen(pmg,peer):
         while True:
-            for peer in pmg.peers:
                 try:
                     payload = pmg.read_from_socket(peer.socket)
                 except Exception as e:
