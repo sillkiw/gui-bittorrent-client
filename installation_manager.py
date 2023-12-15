@@ -23,7 +23,7 @@ class Installation_MNG(multiprocessing.Process):
 
         imng.initialize_tracker_and_peer_manager()
         imng.peer_mng.get_on_well_piece_mng(imng.piece_mng)
-        imng.peer_mng.start()
+       
     
         imng.to_head.send(('0%','Downloading',f'0({imng.tracker.amount_of_connected_peers})'))
 
