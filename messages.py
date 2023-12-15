@@ -369,7 +369,7 @@ Piece message(опцианально)
 PIECE_MESSAGE_ID = 7
 
 def piece_msg_from_bytes(payload):
-    block_length = len() - (LEN + 9)
+    block_length = len(payload) - (LEN + 9)
     payload_length,message_id,piece_index,begin,block = unpack(f">IBII{block_length}s",payload[:13+block_length])
 
     if message_id != PIECE_MESSAGE_ID:
