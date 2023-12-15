@@ -11,7 +11,7 @@ class HeadWindow(tk.Tk): #главное окно
         head.title('PirTorrent')
         head.sc_width = head.winfo_screenwidth()
         head.sc_height = head.winfo_screenheight()
-        head.head_width = head.sc_width//2 + head.sc_width//3 #ширина главного окна
+        head.head_width = head.sc_width//2 + head.sc_width//4 #ширина главного окна
         head.head_height = head.sc_height//2 + head.sc_height//4 #высота главного окна
         head.geometry(f"{head.head_width}x{head.head_height}+{(head.sc_width - head.head_width)//2}+{(head.sc_height - head.head_height -100)//2}")
         head.iconbitmap("images/icon.ico")
@@ -21,9 +21,11 @@ class HeadWindow(tk.Tk): #главное окно
         head.torrent_list = []
         #Обзорщик установок
         head.number_of_torrent = 0
-        head.viewer = ttk.Treeview(head,show="headings")
+        head.frame_viewer = tk.Frame(head)
+        head.viewer = ttk.Treeview(head.frame_viewer,show="headings")
+        head.viewer.pack(fill=tk.BOTH,expand=True)
         head.fill_viewer_collums()
-        head.viewer.pack(fill=tk.BOTH,expand=1,pady=45)
+        head.frame_viewer.pack(fill=tk.BOTH,expand=True)
         #Установка панели инструментов
         head.set_tool_bar() 
         
@@ -75,15 +77,15 @@ class HeadWindow(tk.Tk): #главное окно
     #Функция для потоков для обновления информации об установочном процессе 
     def updater(head,id,from_install,name,size):
         while True:
-            peer = str(from_install.recv())
-            head.viewer.item(id,text = "",values=(name,size,"0%","Downloading...",peer,"?","?"))
+            progress,status,peers= from_install.recv()
+            head.viewer.item(id,text = "",values=(name,size,progress,status,peers))
     
     #Инициализация и начала установки
     def initalize_installation(head):
         torrent = head.torrent_list[-1]
         #Размещение строки в обзорщик установки
         head.viewer.insert(parent="",index = "end",iid = head.number_of_torrent,
-                           values = (torrent.name,torrent.size,"0%","Downloading...","?","?","?"))
+                           values = (torrent.name,torrent.size,"0%","Downloading...","0(0)"))
         #Нужно сохранять трубы в массив,а иначе не работает
         head.pipes_list.append(Pipe())
         to_head,from_install = head.pipes_list[-1]
@@ -96,7 +98,7 @@ class HeadWindow(tk.Tk): #главное окно
 
     #Обзорщик установок
     def fill_viewer_collums(head):
-        columns =  ["Name","Size","Progress","Status","Peers","Speed","Ratio"]
+        columns =  ["Name","Size","Progress","Status","Peers"]
         head.viewer['columns'] = tuple(columns)
         head.viewer.column("#0")
         head.viewer.heading("#0")
