@@ -54,8 +54,7 @@ class Tracker:
                 response = ben.bdecode(track.response.content)
                 peers_data = track.response['peers']
                 if isinstance(peers_data,list):
-                    list_of_peer_forms = track.big_endian_unpack_for_http_response(peers_data)
-                    track.list_of_peers_form.append(*list_of_peer_forms)
+                    track.big_endian_unpack_for_http_response(peers_data)
                 else:
                     for peer_data in peers_data:
                         peer_form= [peer_data['ip'],peer_data['port']]
@@ -66,7 +65,6 @@ class Tracker:
                  messagebox.showerror("Erorr","Can't connect with a tracker")
                    
         def big_endian_unpack_for_http_response(track,peers_data):
-             list_of_forms = []
              amount_of_peer_data = len(peers_data)//6
              for _ in range(amount_of_peer_data):
                 peer_ip = struct.unpack_from("!i", peers_data,offset=position)[0]
@@ -76,7 +74,7 @@ class Tracker:
                 peer_port = struct.unpack_from("!H",peers_data.packed_peers,position)[0]
                 position += 2
                 
-                list_of_forms.append([peer_ip,peer_port])
+                track.list_of_peers_form([peer_ip,peer_port])
         
         
 
@@ -86,10 +84,9 @@ class Tracker:
             
 
         def connect_with_peers(track):
-            track.get_list_of_peers()
-            track.amount_of_peers = len(track.list_of_peers)
+          
             for peer_form in track.list_of_peers:
-                if not peer.connect():
+                
                     continue
                 print(f"CONNECTED WITH {peer.ip}")
                 track.connected_peers.append(peer)   
