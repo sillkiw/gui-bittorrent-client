@@ -16,6 +16,7 @@ class Torrent:
         tr.name = name
         tr.file_names = []
         tr.direction = None
+        
     #Чтение метаданных с метафайла
     def read_Metafile(tr):
         #Открытие торрент-файла
