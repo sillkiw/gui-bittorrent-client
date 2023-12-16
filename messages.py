@@ -1,5 +1,5 @@
 '''Модуль с функциями для работы с сообщениями, определенными в BitTorrent protocol'''
-
+from random import randint
 from struct import pack,unpack
 from bitstring import BitArray
 '''Вспомогательные функции и константы'''
@@ -15,9 +15,50 @@ def name_msg_from_bytes_maker(payload,cons_total_length,cons_payload_length,cons
             "id" :message_id,
             }
 
+'''UPD tracker'''
+MAGIC_CONSTANT = 0x41727101980
+CONNECTION_ID = pack('>Q',MAGIC_CONSTANT)
+CONNECTION_ACTION = pack('>I',0)
 
-'''
-HandShake message:
+def upd_tracker_connection_form_message():
+    """
+        connect = <connection_id><action><transaction_id>
+            - connection_id = 0x41727101980 64-bit integer
+            - action = 0 32-bit integer
+            - transaction_id = random 32-bit integer
+
+        Total length = 64 + 32 + 32 = 128 bytes
+    """
+    trans_id = pack(">I",randint(1000,100000))
+    return CONNECTION_ID +  CONNECTION_ACTION + trans_id,trans_id
+   
+def upd_tracker_connection_form_message_recieve(payload,given_trans_id):
+    """
+        connect_response = <action><transaction_id><connection_id>
+        - action = 0 32-bit integer
+        - transaction_id = random 32-bit integer
+        - connection_id = 0x41727101980 64-bit integer
+
+        Total length = 64 + 32 + 32 = 128 bytes
+    
+    """
+    action = unpack(">I",payload[:4])    
+    trans_id =  unpack(">I",payload[4:8])
+    conn_id = unpack(">Q",payload[8:])
+
+    if action != CONNECTION_ACTION or conn_id != CONNECTION_ID or trans_id != given_trans_id:
+        raise Exception("Ответ трекера не корректен")
+    else:
+        #conn_id понадобится в будущем
+        return True,conn_id
+
+'''HandShake'''
+HANDSHAKE_PAYLOAD_LENGTH = HANDSHAKE_TOTAL_LENGTH = 68
+HS_PSTR = b"BitTorrent protocol"
+HS_PSTRLEN = len(HS_PSTR)
+
+def handshake_msg_to_bytes(peer_id,info_hash):
+    '''
     -----------------------------------------------------------------------------------------------------------------
     Назначение:
     -----------------------------------------------------------------------------------------------------------------
@@ -42,12 +83,7 @@ HandShake message:
         ------------------------ +
         payload_length = total_length = 68 (byte)
     -----------------------------------------------------------------------------------------------------------------
-'''
-HANDSHAKE_PAYLOAD_LENGTH = HANDSHAKE_TOTAL_LENGTH = 68
-HS_PSTR = b"BitTorrent protocol"
-HS_PSTRLEN = len(HS_PSTR)
-
-def handshake_msg_to_bytes(peer_id,info_hash):
+    '''
     reserved = b'\x00' * 8
     return pack(f">B{HS_PSTRLEN}s8s20s20s",
                          HS_PSTRLEN,
@@ -471,4 +507,5 @@ def determinator_of_messages(u_message):
         raise Exception("Ошибка в определении id сообщения")
            
     return map_id_to_message[u_message_id](u_message)
+
 
