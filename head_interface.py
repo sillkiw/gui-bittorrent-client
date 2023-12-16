@@ -66,7 +66,7 @@ class HeadWindow(tk.Tk): #главное окно
     def check_user_action(head):  
         #Ожидание ответа пользователя
         head.wait_window(head.torrent_show)
-        if head.torrent_show.state_of_answer == winfoWindow._States_of_answer.T_OPENED:
+        if head.torrent_show.state_of_answer == winfoWindow.__States_of_answer__.T_OPENED:
                 #Добавление выбранного торрента в список торрентов 
           
                 head.torrent_list.append(head.torrent_show.torrent) 
