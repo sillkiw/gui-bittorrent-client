@@ -14,7 +14,7 @@ import os
 class winfoWindow(tk.Toplevel):
     
     #Состояния ответа пользователя
-    class _States_of_answer(Enum):
+    class __States_of_answer__(Enum):
         T_CLOSED = -1 #Окно закрыли
         U_THINKING = 0 #Окно работает
         T_OPENED = 1 #Пользователь нажал на open
@@ -67,7 +67,7 @@ class winfoWindow(tk.Toplevel):
          winfo.vsb.config(command=winfo.file_system.yview)
          winfo.file_system.pack() 
         #Пользователь еще ничего не нажал
-         winfo.state_of_answer = winfoWindow._States_of_answer.U_THINKING
+         winfo.state_of_answer = winfoWindow.__States_of_answer__.U_THINKING
          winfo.answer_frame = tk.Frame(winfo)
          winfo.answer_frame.pack(fill=tk.X)
         #Кнопка закрытия 
@@ -83,7 +83,7 @@ class winfoWindow(tk.Toplevel):
     #Пользователь нажал Close
     def close_pressed(winfo):
         #Пользователь отказался от установки
-        winfo.state_of_answer = winfoWindow._States_of_answer.T_CLOSED
+        winfo.state_of_answer = winfoWindow.__States_of_answer__.T_CLOSED
         #Закрытие окна
         winfo.grab_release()
         winfo.destroy()
@@ -91,7 +91,7 @@ class winfoWindow(tk.Toplevel):
     #Пользователь нажал Open
     def open_pressed(winfo):
         #Пользователь согласился на установку
-        winfo.state_of_answer = winfoWindow._States_of_answer.T_OPENED
+        winfo.state_of_answer = winfoWindow.__States_of_answer__.T_OPENED
         #Закрытие окна
         winfo.grab_release()
         winfo.destroy()
