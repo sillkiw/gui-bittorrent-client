@@ -13,6 +13,8 @@ class Peer:
         pr.socket = None
         pr.alive =False
         pr.last_call = 0.0
+        pr.fill_factor = 0
+        pr.activity_factor = 0
         pr.bitfield = BitArray(pr.tracker.torrent.number_of_pieces)
         #Начальные значения состояний подключения по спецификации таие
         pr.state = {
@@ -27,8 +29,8 @@ class Peer:
             pr.socket = socket.create_connection((pr.ip,pr.port),timeout=0.3)
             pr.socket.setblocking(False)
             pr.alive = True
+            pr.activity_factor = 100
         except Exception as e:
-            print(f"NO CONNECTION {pr.ip}")
             return False
         return  True
     
@@ -54,7 +56,8 @@ class Peer:
             pr.last_call = time.time()
         except Exception as e:
             pr.alive = False
-            print("Failed to send to peer : %s" % e.__str__())
+            pr.activity_factor = 0
+            print("Не получается отправить сообщение | пир будет удален")
     
     def handle_handshake(pr):
         try:
@@ -157,3 +160,6 @@ class Peer:
                     yield recv_message
             except Exception as e:
                 print(e.__str__)
+    
+    def __hash__(pr):
+        return "%s:%d" % (pr.ip, pr.port)
