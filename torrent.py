@@ -25,7 +25,6 @@ class Torrent:
             tr.metainfo = ben.bdecode(torrent_file.read())
             #url-адресс трекера
             tr.announce_list = tr.get_trackers()
-            print(tr.announce_list)
             #info - информация о файлах торрента, частях и их размеров
             tr.info = tr.metainfo['info']
             #piece length - размер одной части
