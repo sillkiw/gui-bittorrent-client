@@ -49,6 +49,7 @@ class Installation_MNG(multiprocessing.Process):
                 piece_index,block_offset,block_length = block_data  
                 request_msg = messages.request_msg_to_bytes(piece_index,block_offset,block_length)
                 peer.sent_message(request_msg)
+                imng.peer_mng.update_peers()
             imng.display_progress()
 
             time.sleep(0.1)  
@@ -69,7 +70,7 @@ class Installation_MNG(multiprocessing.Process):
 
 
     def initialize_tracker_and_peer_manager(imng):
-        imng.tracker.connect_with_tracker()
+        imng.tracker.connect_with_trackers()
         imng.peer_mng = PeerManager(imng.tracker)
         #Инициализация менеджера пиров
         imng.peer_mng.handshake_with_peers()
