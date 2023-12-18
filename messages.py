@@ -15,10 +15,16 @@ def name_msg_from_bytes_maker(payload,cons_total_length,cons_payload_length,cons
             "id" :message_id,
             }
 
+
+
 '''UPD tracker'''
+
+'''CONNECTION MESSAGES'''
 MAGIC_CONSTANT = 0x41727101980
-CONNECTION_ID = pack('>Q',MAGIC_CONSTANT)
-CONNECTION_ACTION = pack('>I',0)
+PROTOCOL_ID = pack('>Q',MAGIC_CONSTANT)
+CONNECTION_ACTION = 0
+CONNECTION_ACTION_PACK = pack('>I',CONNECTION_ACTION)
+CONNECTION_MESSAGE_SIZE = 16
 
 def upd_tracker_connection_form_message():
     """
@@ -29,28 +35,68 @@ def upd_tracker_connection_form_message():
 
         Total length = 64 + 32 + 32 = 128 bytes
     """
-    trans_id = pack(">I",randint(1000,100000))
-    return CONNECTION_ID +  CONNECTION_ACTION + trans_id,trans_id
+    trans_id = randint(1000,100000)
+    return PROTOCOL_ID +  CONNECTION_ACTION_PACK + pack(">I",trans_id),trans_id
    
-def upd_tracker_connection_form_message_recieve(payload,given_trans_id):
+def upd_tracker_connection_form_message_recieve(payload,made_trans_id):
     """
         connect_response = <action><transaction_id><connection_id>
         - action = 0 32-bit integer
-        - transaction_id = random 32-bit integer
+        - transaction_id = с первого запроса 32-bit integer
         - connection_id = 0x41727101980 64-bit integer
 
         Total length = 64 + 32 + 32 = 128 bytes
     
     """
-    action = unpack(">I",payload[:4])    
-    trans_id =  unpack(">I",payload[4:8])
-    conn_id = unpack(">Q",payload[8:])
+    if len(payload) < CONNECTION_MESSAGE_SIZE:
+        return False,None
 
-    if action != CONNECTION_ACTION or conn_id != CONNECTION_ID or trans_id != given_trans_id:
-        raise Exception("Ответ трекера не корректен")
+    action, = unpack(">I",payload[:4])    
+    trans_id, =  unpack(">I",payload[4:8])
+    conn_id, = unpack(">Q",payload[8:])
+
+    if action != CONNECTION_ACTION  or trans_id != made_trans_id:
+        return False,None
     else:
-        #conn_id понадобится в будущем
+
         return True,conn_id
+
+'''ANNOUNCE MESSAGES'''
+ANNOUNCE_ACTION = 1
+ANNOUNCE_ACTION_PACK = pack('>I',ANNOUNCE_ACTION)
+ANNOUNCE_RESPONSE_MIN_SIZE = 20
+
+#TODO:сделать комменты 
+def upd_tracker_annnounce_form_message(peer_id,info_hash,conn_id):
+    trans_id = randint(1000,100000)
+    trans_id_pack = pack(">I",trans_id)
+    downloaded = left = uploaded = pack('>Q',0)
+    event = ip = key = pack('>I',0)
+    num_want = pack('>i',-1)
+    port = pack('>H',8000)
+    conn_id_pack = pack(">Q",conn_id)
+
+    return (conn_id_pack + ANNOUNCE_ACTION_PACK + trans_id_pack + info_hash + peer_id + downloaded + left + uploaded + event + ip + key + num_want + port),trans_id
+
+def upd_tracker_annnounce_form_message_recieve(payload,given_trans_id):
+    
+    print(len(payload))
+    if len(payload) < ANNOUNCE_RESPONSE_MIN_SIZE:
+        return False,None
+    
+    action, = unpack('>I', payload[:4])
+    transaction_id, = unpack('>I', payload[4:8])
+    interval, = unpack('>I', payload[8:12])
+    leechers, = unpack('>I', payload[12:16])
+    seeders, = unpack('>I', payload[16:20])
+    peers_data = payload[20:]
+
+    if action != ANNOUNCE_ACTION or transaction_id != given_trans_id:
+        return False,None
+    else:
+        return True,peers_data
+    
+'''END | UPD tracker'''
 
 '''HandShake'''
 HANDSHAKE_PAYLOAD_LENGTH = HANDSHAKE_TOTAL_LENGTH = 68
