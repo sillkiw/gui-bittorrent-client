@@ -7,29 +7,31 @@ class PeerManager():
         pmg.tracker = tracker
         pmg.peers = []
         pmg.handshake_message = handshake_msg_to_bytes(pmg.tracker.peer_id,pmg.tracker.info_hash)
-
+        pmg.peer_thread = {}
     def handshake(pmg,peer):
         try:
             peer.sent_message(pmg.handshake_message)
-            print(f"HandShake with {peer.ip}")
+            print(f"Отправка сообщения HandShake к {peer.ip}")
             return True
         except Exception as e:
-            print(f"Handshake error with {peer.ip}")
+            return False
 
     def handshake_with_peers(pmg):
         for peer in pmg.tracker.connected_peers:
             if pmg.handshake(peer):
                 pmg.peers.append(peer)
-                Thread(target=pmg.start_to_listen,args=(peer,)).start()
+                peer_thread = Thread(target=pmg.start_to_listen,args=(peer,))
+                pmg[peer.__hash__()] = peer_thread
+                pmg[peer.__hash__()].start()
             else: 
-                print(f"Can't handshake with {peer.ip}")
+                print(f"Не получилось отправить сообщение Handshake к {peer.ip}")
+                pmg.remove_peer(peer)
 
     def start_to_listen(pmg,peer):
         while True:
                 try:
                     payload = pmg.read_from_socket(peer.socket)
                 except Exception as e:
-                    print("Нет ответа от пира "+e.__str__)
                     pmg.remove_peer(peer)
                     continue 
                 
