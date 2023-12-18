@@ -7,13 +7,14 @@ from urllib.parse import urlparse
 from peer import Peer
 import struct,socket,time,messages
 from peer_manager import PeerManager
+from threading import Thread
 
+MAX_PEER_CONNECTED = 10000
 
-MAX_PEER_CONNECTED = 10
-
-class Tracker:      
+class Tracker(Thread):      
         
         def __init__(track,torrent):
+            Thread.__init__(track)
             track.info_hash = hash.sha1(ben.bencode(torrent.info)).digest()
             track.peer_id = b'-PR7070-'+bytes([randint(0,9) for _ in range(12)])
             track.user_port = 6881
@@ -48,7 +49,7 @@ class Tracker:
                         print(f"Не удалось отправить запрос к трекеру {url}, либо ответ трекера был неверен")
                 else:
                     pass
-            track.connect_with_peers()
+           
 
         def http_handle(track,url):
             try:
@@ -93,7 +94,7 @@ class Tracker:
 
         def send_message(track,tracker_form,sock,message,receiver,trans_id):
             sock.sendto(message,tracker_form)
-            print(len(message))
+      
             try:
                 response = sock.recv(4096)
             except Exception as e:
@@ -123,7 +124,7 @@ class Tracker:
                track.list_of_peers_form.append( peer_form )
    
         
-        def connect_with_peers(track):
+        def run(track):
             for peer_form in track.list_of_peers_form:
                 if len(track.connected_peers) >= MAX_PEER_CONNECTED:
                     print("Достигнут лимит подключений")
@@ -132,16 +133,18 @@ class Tracker:
                 ip = peer_form['ip']
                 port = peer_form['port']
                 new_peer = Peer(ip,port,track)
-
                 print(f"Попытка подключение к {new_peer.ip}")
                 if not new_peer.connect():
                     print(f"Не удалось подключиться к {new_peer.ip}")
                     continue
-                
                 print(f"Получилось подключиться к {new_peer.ip}")
+                track.peer_mng.handshake_with_peer(new_peer)
 
                 track.connected_peers.append(new_peer)
             track.amount_of_connected_peers = len(track.connected_peers)
+
+        def get_on_well_with_peer_mng(track,peer_mng):
+            track.peer_mng = peer_mng
 
 def make_peer_form(ip,port):
     return {'ip':ip,'port':port}
