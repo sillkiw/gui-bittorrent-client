@@ -55,9 +55,8 @@ class Peer:
             pr.socket.send(msg)
             pr.last_call = time.time()
         except Exception as e:
-            pr.alive = False
             pr.activity_factor = 0
-            print("Не получается отправить сообщение | пир будет удален")
+            
     
     def handle_handshake(pr):
         try:
