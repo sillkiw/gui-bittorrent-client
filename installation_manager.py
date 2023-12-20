@@ -43,7 +43,7 @@ class Installation_MNG(multiprocessing.Process):
                 request_msg = messages.request_msg_to_bytes(piece_index,block_offset,block_length)
                 peer.sent_message(request_msg)
             time.sleep(0.2)
-            imng.peer_mng.update_peers()
+            #imng.peer_mng.check_peers()
             imng.display_progress()
         
 
