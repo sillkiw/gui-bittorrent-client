@@ -9,7 +9,7 @@ import struct,socket,time,messages
 from peer_manager import PeerManager
 from threading import Thread
 
-MAX_PEER_CONNECTED = 10000
+
 
 class Tracker(Thread):      
         
@@ -54,12 +54,12 @@ class Tracker(Thread):
         def http_handle(track,url):
             try:
                 print(f"Попытка отправить запрос к трекеру {url}")
-                response_from_tracker= req.get(url,track.parametrs_for_http_get,timeout=2)
+                response_from_tracker= req.get(url,track.parametrs_for_http_get,timeout=1)
                 response_from_tracker = ben.bdecode(response_from_tracker.content)
-                print(f"Отвте от трекера {url}")
+                print(f"Получение ответа от трекера {url}")
                 peers_data = response_from_tracker['peers']
                 if isinstance(peers_data,bytes):
-                    track.big_endian_unpack_for_http_response(peers_data)
+                    track.big_endian_unpack(peers_data)
                 else:
                     for peer_data in peers_data:
                         peer_form = make_peer_form(peer_data['ip'],peer_data['port'])
@@ -74,7 +74,7 @@ class Tracker(Thread):
             try:
                 url_socket = socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
                 url_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-                url_socket.settimeout(2)
+                url_socket.settimeout(1)
 
                 ip,port = socket.gethostbyname(parsed.hostname),parsed.port
 
@@ -87,7 +87,7 @@ class Tracker(Thread):
                 peers_data = track.send_message((ip,port),url_socket,tracker_announce_message,
                                                 messages.upd_tracker_annnounce_form_message_recieve,trans_id)
                 
-                track.big_endian_unpack_for_http_response(peers_data)
+                track.big_endian_unpack(peers_data)
             except Exception:
                 raise Exception()
 
@@ -109,7 +109,7 @@ class Tracker(Thread):
             return response
             
 
-        def big_endian_unpack_for_http_response(track,peers_data):
+        def big_endian_unpack(track,peers_data):
             amount_of_peer_data = len(peers_data)//6
             position = 0
             for _ in range(amount_of_peer_data):
@@ -126,14 +126,10 @@ class Tracker(Thread):
         
         def run(track):
             for peer_form in track.list_of_peers_form:
-                if len(track.connected_peers) >= MAX_PEER_CONNECTED:
-                    print("Достигнут лимит подключений")
-                    break
-
                 ip = peer_form['ip']
                 port = peer_form['port']
                 new_peer = Peer(ip,port,track)
-                print(f"Попытка подключение к {new_peer.ip}")
+                print(f"Попытка подключения к {new_peer.ip}")
                 if not new_peer.connect():
                     print(f"Не удалось подключиться к {new_peer.ip}")
                     continue
@@ -149,18 +145,5 @@ class Tracker(Thread):
 def make_peer_form(ip,port):
     return {'ip':ip,'port':port}
 
-def  read_from_socket(sock):
-    data = b''
-    while True:
-        try:
-            ans = sock.recv(4096)
-            if len(ans) <= 0:
-                break
-            data += ans
-        except Exception as e:
-            break
-    return data     
-        
-            
 
         
