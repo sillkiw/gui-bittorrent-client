@@ -13,6 +13,9 @@ class Peer:
         pr.socket = None
         pr.alive =False
         pr.last_call = 0.0
+        pr.fill_factor = []
+        pr.show = True
+        pr.activity_factor = 0
         pr.bitfield = BitArray(pr.tracker.torrent.number_of_pieces)
         #Начальные значения состояний подключения по спецификации таие
         pr.state = {
@@ -28,7 +31,6 @@ class Peer:
             pr.socket.setblocking(False)
             pr.alive = True
         except Exception as e:
-            print(f"NO CONNECTION {pr.ip}")
             return False
         return  True
     
@@ -53,8 +55,8 @@ class Peer:
             pr.socket.send(msg)
             pr.last_call = time.time()
         except Exception as e:
-            pr.alive = False
-            print("Failed to send to peer : %s" % e.__str__())
+            pr.activity_factor = 0
+            
     
     def handle_handshake(pr):
         try:
@@ -64,8 +66,7 @@ class Peer:
             print(f"Получено ответное сообщение \"HandShake\" от {pr.ip}")
             return True
         except Exception as e:
-            print(e)
-            #print(f"Пир {pr.ip} не отправил ответный Handshake message/ или допустил в нем ошибку")
+            print(f"Пир {pr.ip} не отправил ответный Handshake message/ или допустил в нем ошибку")
             pr.alive = False
         return False
     
@@ -145,7 +146,7 @@ class Peer:
             total_length = message_len_ + messages.LEN
 
             if len(pr.answer_from_me) < total_length:
-                #Заявленный размер не соответсвует реальному размеру сообщению
+                #Заявленный размер не соответсвует реальному размеру сообщения
                 break
             else:
                 undetermine_message = pr.answer_from_me[:total_length]
@@ -157,3 +158,6 @@ class Peer:
                     yield recv_message
             except Exception as e:
                 print(e.__str__)
+    
+    def __hash__(pr):
+        return "%s:%d" % (pr.ip, pr.port)

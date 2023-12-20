@@ -1,5 +1,5 @@
 '''Модуль с функциями для работы с сообщениями, определенными в BitTorrent protocol'''
-
+from random import randint
 from struct import pack,unpack
 from bitstring import BitArray
 '''Вспомогательные функции и константы'''
@@ -16,8 +16,94 @@ def name_msg_from_bytes_maker(payload,cons_total_length,cons_payload_length,cons
             }
 
 
-'''
-HandShake message:
+
+'''UPD tracker'''
+
+'''CONNECTION MESSAGES'''
+MAGIC_CONSTANT = 0x41727101980
+PROTOCOL_ID = pack('>Q',MAGIC_CONSTANT)
+CONNECTION_ACTION = 0
+CONNECTION_ACTION_PACK = pack('>I',CONNECTION_ACTION)
+CONNECTION_MESSAGE_SIZE = 16
+
+def upd_tracker_connection_form_message():
+    """
+        connect = <connection_id><action><transaction_id>
+            - connection_id = 0x41727101980 64-bit integer
+            - action = 0 32-bit integer
+            - transaction_id = random 32-bit integer
+
+        Total length = 64 + 32 + 32 = 128 bytes
+    """
+    trans_id = randint(1000,100000)
+    return PROTOCOL_ID +  CONNECTION_ACTION_PACK + pack(">I",trans_id),trans_id
+   
+def upd_tracker_connection_form_message_recieve(payload,made_trans_id):
+    """
+        connect_response = <action><transaction_id><connection_id>
+        - action = 0 32-bit integer
+        - transaction_id = с первого запроса 32-bit integer
+        - connection_id = 0x41727101980 64-bit integer
+
+        Total length = 64 + 32 + 32 = 128 bytes
+    
+    """
+    if len(payload) < CONNECTION_MESSAGE_SIZE:
+        return False,None
+
+    action, = unpack(">I",payload[:4])    
+    trans_id, =  unpack(">I",payload[4:8])
+    conn_id, = unpack(">Q",payload[8:])
+
+    if action != CONNECTION_ACTION  or trans_id != made_trans_id:
+        return False,None
+    else:
+
+        return True,conn_id
+
+'''ANNOUNCE MESSAGES'''
+ANNOUNCE_ACTION = 1
+ANNOUNCE_ACTION_PACK = pack('>I',ANNOUNCE_ACTION)
+ANNOUNCE_RESPONSE_MIN_SIZE = 20
+
+#TODO:сделать комменты 
+def upd_tracker_annnounce_form_message(peer_id,info_hash,conn_id):
+    trans_id = randint(1000,100000)
+    trans_id_pack = pack(">I",trans_id)
+    downloaded = left = uploaded = pack('>Q',0)
+    event = ip = key = pack('>I',0)
+    num_want = pack('>i',-1)
+    port = pack('>H',8000)
+    conn_id_pack = pack(">Q",conn_id)
+
+    return (conn_id_pack + ANNOUNCE_ACTION_PACK + trans_id_pack + info_hash + peer_id + downloaded + left + uploaded + event + ip + key + num_want + port),trans_id
+
+def upd_tracker_annnounce_form_message_recieve(payload,given_trans_id):
+
+    if len(payload) < ANNOUNCE_RESPONSE_MIN_SIZE:
+        return False,None
+    
+    action, = unpack('>I', payload[:4])
+    transaction_id, = unpack('>I', payload[4:8])
+    interval, = unpack('>I', payload[8:12])
+    leechers, = unpack('>I', payload[12:16])
+    seeders, = unpack('>I', payload[16:20])
+    peers_data = payload[20:]
+
+    if action != ANNOUNCE_ACTION or transaction_id != given_trans_id:
+        return False,None
+    else:
+        return True,peers_data
+    
+'''END | UPD tracker'''
+
+'''HandShake'''
+HANDSHAKE_PAYLOAD_LENGTH = HANDSHAKE_TOTAL_LENGTH = 68
+HS_PSTR = b"BitTorrent protocol"
+HS_PSTRLEN = len(HS_PSTR)
+
+def handshake_msg_to_bytes(peer_id,info_hash):
+    '''
     -----------------------------------------------------------------------------------------------------------------
     Назначение:
     -----------------------------------------------------------------------------------------------------------------
@@ -42,12 +128,7 @@ HandShake message:
         ------------------------ +
         payload_length = total_length = 68 (byte)
     -----------------------------------------------------------------------------------------------------------------
-'''
-HANDSHAKE_PAYLOAD_LENGTH = HANDSHAKE_TOTAL_LENGTH = 68
-HS_PSTR = b"BitTorrent protocol"
-HS_PSTRLEN = len(HS_PSTR)
-
-def handshake_msg_to_bytes(peer_id,info_hash):
+    '''
     reserved = b'\x00' * 8
     return pack(f">B{HS_PSTRLEN}s8s20s20s",
                          HS_PSTRLEN,
@@ -305,7 +386,7 @@ def bitfield_msg_from_bytes(payload):
 #TODO: доделать объяснение
 
 '''
-Request message(опцианально)
+Request message
    -----------------------------------------------------------------------------------------------------------------
     Назначение:
     -----------------------------------------------------------------------------------------------------------------
@@ -318,8 +399,8 @@ Request message(опцианально)
         len - фиксированный размер сообщения 13
         id  - 6
         index - число, индекс части
-        begin - 
-        length
+        begin - сдвиг по блокам
+        length - размер блока
     -----------------------------------------------------------------------------------------------------------------
     Общий размер сообщения и его действительной части:
     -----------------------------------------------------------------------------------------------------------------
@@ -471,4 +552,5 @@ def determinator_of_messages(u_message):
         raise Exception("Ошибка в определении id сообщения")
            
     return map_id_to_message[u_message_id](u_message)
+
 

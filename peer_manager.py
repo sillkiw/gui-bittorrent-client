@@ -2,35 +2,39 @@ from messages import handshake_msg_to_bytes
 from threading import Thread
 import messages
 from random import choice
-class PeerManager(Thread):
-    def __init__(pmg,tracker):
-        Thread.__init__(pmg)
+class PeerManager():
+    def __init__(pmg,tracker,piece_manager):
         pmg.tracker = tracker
         pmg.peers = []
         pmg.handshake_message = handshake_msg_to_bytes(pmg.tracker.peer_id,pmg.tracker.info_hash)
+        pmg.peer_thread = {}
+        pmg.piece_mng = piece_manager
+    
 
     def handshake(pmg,peer):
         try:
             peer.sent_message(pmg.handshake_message)
-            print(f"HandShake with {peer.ip}")
+            print(f"Отправка сообщения HandShake к {peer.ip}")
             return True
         except Exception as e:
-            print(f"Handshake error with {peer.ip}")
+            return False
 
-    def handshake_with_peers(pmg):
-        for peer in pmg.tracker.connected_peers:
-            if pmg.handshake(peer):
-                pmg.peers.append(peer)
-            else: 
-                print(f"Can't handshake with {peer.ip}")
+    def handshake_with_peer(pmg,peer):
+        if pmg.handshake(peer):
+            pmg.peers.append(peer)
+            
+            Thread(target=pmg.start_to_listen,args=(pmg.peers[-1],)).start()
+        
+        else: 
+            print(f"Не получилось отправить сообщение Handshake к {peer.ip}")
+            pmg.remove_peer(peer)
 
-    def run(pmg):
+    
+    def start_to_listen(pmg,peer):
         while True:
-            for peer in pmg.peers:
                 try:
                     payload = pmg.read_from_socket(peer.socket)
                 except Exception as e:
-                    print("Нет ответа от пира "+e.__str__)
                     pmg.remove_peer(peer)
                     continue 
                 
@@ -56,6 +60,7 @@ class PeerManager(Thread):
         elif message_id == messages.REQUEST_MESSAGE_ID:
             peer.handle_request(message)
         elif message_id == messages.PIECE_MESSAGE_ID:
+            peer.activity_factor += 1
             print(f"Получение сообщения 'Piece' от {peer.ip}")
             pmg.piece_mng.handle_piece(message)
         elif message_id == messages.CANCEL_MESSAGE_ID:
@@ -71,12 +76,14 @@ class PeerManager(Thread):
             peer.socket.close()
         except Exception:
             pass
+        pmg.peer_thread[peer.__hash__()]
         pmg.peers.remove(peer)
 
     def read_from_socket(pmg,sock):
         data = b''
         while True:
             try:
+             
                 ans = sock.recv(4096)
                 if len(ans) <= 0:
                     break
@@ -88,9 +95,11 @@ class PeerManager(Thread):
     def count_unchoked_peers(pmg):
         count = 0
         for peer in pmg.peers:
-            if peer.is_unchoked:
+            if peer.is_unchoked():
                 count += 1
         return count
+
+    
 
     def handshake(pmg,peer):
         try:
@@ -113,5 +122,4 @@ class PeerManager(Thread):
                 return True
         return False
     
-    def get_on_well_piece_mng(pmg,piece_mng):
-        pmg.piece_mng = piece_mng
+

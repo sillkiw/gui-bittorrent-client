@@ -5,6 +5,27 @@ from showinfo import winfoWindow
 from installation_manager import Installation_MNG
 from multiprocessing import Pipe
 import threading
+
+class InstallationForm:
+    def __init__(install_form,head,torrent,id):
+        install_form.head = head
+        install_form.name = torrent.name
+        install_form.size = torrent.size
+        install_form.id = id
+        install_form.to_head,install_form.from_install = Pipe()
+        install_form.installation_mng = Installation_MNG(torrent,install_form.to_head)
+        install_form.updater_thread = threading.Thread(target=install_form.updater)
+        
+    def updater(install_form):
+        while True:
+            progress,status,peers= install_form.from_install.recv()
+            install_form.head.viewer.item(install_form.id,text = "",values=(install_form.name,install_form.size,progress,status,peers))
+
+    def begin(install_form):
+        install_form.updater_thread.start()
+        install_form.installation_mng.start()
+        
+
 class HeadWindow(tk.Tk): #главное окно
     def __init__(head):
         super().__init__()    
@@ -17,7 +38,7 @@ class HeadWindow(tk.Tk): #главное окно
         head.iconbitmap("images/icon.ico")
         #Инициализация списка труб для передачи информации между процессами
         head.amount_of_installation = 0
-        head.pipes_list = []
+        head.installation_form_list = {}
         head.torrent_list = []
         #Обзорщик установок
         head.number_of_torrent = 0
@@ -34,7 +55,7 @@ class HeadWindow(tk.Tk): #главное окно
         #Функция открытия файловой системы и выбора файла
         def open_file_system(): 
             #Пользователь выбирает торрент файл
-            head.target_torrent = fd.askopenfile(filetypes =[('Torrent Files', '*.torrent')]) 
+            head.target_torrent = fd.askopenfile(initialdir="C:\\",filetypes =[('Torrent Files', '*.torrent')]) 
             head.show_info_ab_file()
 
         #Инициализация панели инструментов (Open|Edit|View)
@@ -66,37 +87,23 @@ class HeadWindow(tk.Tk): #главное окно
     def check_user_action(head):  
         #Ожидание ответа пользователя
         head.wait_window(head.torrent_show)
-        if head.torrent_show.state_of_answer == winfoWindow._States_of_answer.T_OPENED:
+        if head.torrent_show.state_of_answer == winfoWindow.__States_of_answer__.T_OPENED:
                 #Добавление выбранного торрента в список торрентов 
-          
                 head.torrent_list.append(head.torrent_show.torrent) 
-                
                 #Инициализация и начала установки
                 head.initalize_installation()
     
-    #Функция для потоков для обновления информации об установочном процессе 
-    def updater(head,id,from_install,name,size):
-        while True:
-            progress,status,peers= from_install.recv()
-            head.viewer.item(id,text = "",values=(name,size,progress,status,peers))
-    
-    #Инициализация и начала установки
+    #Инициализация и начала установки           
     def initalize_installation(head):
         torrent = head.torrent_list[-1]
         #Размещение строки в обзорщик установки
-        head.viewer.insert(parent="",index = "end",iid = head.number_of_torrent,
+        id = len(head.torrent_list)
+        head.viewer.insert(parent="",index = "end",iid = id,
                            values = (torrent.name,torrent.size,"0%","Downloading...","0(0)"))
-        #Нужно сохранять трубы в массив,а иначе не работает
-        head.pipes_list.append(Pipe())
-        to_head,from_install = head.pipes_list[-1]
-        #Инициализация установочного менеджера
-        Installation_MNG(torrent,to_head).start()
-        #Запуск нового потока для обновления информации на экране
-        threading.Thread(target=head.updater,args=(head.number_of_torrent,from_install,torrent.name,torrent.size)).start()
-        #Увеличение счетчика 
-        head.number_of_torrent+=1
+        head.installation_form_list[id] = InstallationForm(head,torrent,id)
+        head.installation_form_list[id].begin()
 
-    #Обзорщик установок
+    #Обзорщик установо5к
     def fill_viewer_collums(head):
         columns =  ["Name","Size","Progress","Status","Peers"]
         head.viewer['columns'] = tuple(columns)
