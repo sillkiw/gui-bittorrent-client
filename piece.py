@@ -34,7 +34,7 @@ class Piece:
             pie.blocks[index].data = data
             pie.blocks[index].state = State.FULL
     
-    def set_to_full(pie):
+    def relief_piece_from_buff(pie):
         data = pie.merge_blocks()
 
         if not pie.check_blocks(data):
