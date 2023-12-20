@@ -12,6 +12,7 @@ class Installation_MNG(multiprocessing.Process):
         imng.torrent = torrent
         #Pipe c head
         imng.to_head = to_head
+        #Общий прогресс установки
         imng.progress = 0
         
 
@@ -43,10 +44,11 @@ class Installation_MNG(multiprocessing.Process):
                 piece_index,block_offset,block_length = block_data  
                 request_msg = messages.request_msg_to_bytes(piece_index,block_offset,block_length)
                 peer.sent_message(request_msg)
-                print(f"send to { peer.ip} piece_index {piece_index} block_offset {block_offset}")
+                peer.requests += 1
             #imng.peer_mng.check_peers()
             time.sleep(0.04)
             imng.display_progress()
+            imng.peer_mng.update_peers()
 
         
 
