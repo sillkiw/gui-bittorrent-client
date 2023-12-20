@@ -55,7 +55,7 @@ class HeadWindow(tk.Tk): #главное окно
         #Функция открытия файловой системы и выбора файла
         def open_file_system(): 
             #Пользователь выбирает торрент файл
-            head.target_torrent = fd.askopenfile(filetypes =[('Torrent Files', '*.torrent')]) 
+            head.target_torrent = fd.askopenfile(initialdir="C:\\",filetypes =[('Torrent Files', '*.torrent')]) 
             head.show_info_ab_file()
 
         #Инициализация панели инструментов (Open|Edit|View)
@@ -93,7 +93,7 @@ class HeadWindow(tk.Tk): #главное окно
                 #Инициализация и начала установки
                 head.initalize_installation()
     
-    #Инициализация и начала установки
+    #Инициализация и начала установки           
     def initalize_installation(head):
         torrent = head.torrent_list[-1]
         #Размещение строки в обзорщик установки
