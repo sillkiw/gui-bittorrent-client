@@ -31,7 +31,7 @@ class PeerManager():
 
     
     def start_to_listen(pmg,peer):
-        while True:
+        while peer.alive:
                 try:
                     payload = pmg.read_from_socket(peer.socket)
                 except Exception as e:
@@ -83,7 +83,6 @@ class PeerManager():
         data = b''
         while True:
             try:
-             
                 ans = sock.recv(4096)
                 if len(ans) <= 0:
                     break
@@ -122,4 +121,10 @@ class PeerManager():
                 return True
         return False
     
+    
+    def update_peers(pmg):
+        for peer in pmg.peers:
+            if peer.requests > 0 and peer.activity_factor == 0:
+                pmg.remove_peer(peer)
+            
 
