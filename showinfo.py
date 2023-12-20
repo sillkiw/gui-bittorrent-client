@@ -123,7 +123,7 @@ class winfoWindow(tk.Toplevel):
         target_destination = fd.askdirectory(parent=winfo,initialdir=winfo.direction)
         #Изменение предыдущих значений
         winfo.direction = target_destination
-        winfo.torrent = target_destination
+        
         winfo.file_button.config(text=winfo.direction)
 
 
