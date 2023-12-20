@@ -79,8 +79,7 @@ def upd_tracker_annnounce_form_message(peer_id,info_hash,conn_id):
     return (conn_id_pack + ANNOUNCE_ACTION_PACK + trans_id_pack + info_hash + peer_id + downloaded + left + uploaded + event + ip + key + num_want + port),trans_id
 
 def upd_tracker_annnounce_form_message_recieve(payload,given_trans_id):
-    
-    print(len(payload))
+
     if len(payload) < ANNOUNCE_RESPONSE_MIN_SIZE:
         return False,None
     
