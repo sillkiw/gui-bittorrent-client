@@ -10,6 +10,7 @@ from peer_manager import PeerManager
 from threading import Thread
 
 
+MAX_PEER_CONNECTED = 20
 
 class Tracker(Thread):      
         
@@ -126,6 +127,8 @@ class Tracker(Thread):
         
         def run(track):
             for peer_form in track.list_of_peers_form:
+                if len(track.connected_peers) > MAX_PEER_CONNECTED:
+                    break
                 ip = peer_form['ip']
                 port = peer_form['port']
                 new_peer = Peer(ip,port,track)
@@ -137,7 +140,9 @@ class Tracker(Thread):
                 track.peer_mng.handshake_with_peer(new_peer)
 
                 track.connected_peers.append(new_peer)
+                time.sleep(2)
             track.amount_of_connected_peers = len(track.connected_peers)
+            time.sleep(20000)
 
         def get_on_well_with_peer_mng(track,peer_mng):
             track.peer_mng = peer_mng
