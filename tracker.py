@@ -10,7 +10,7 @@ from peer_manager import PeerManager
 from threading import Thread
 
 
-MAX_PEER_CONNECTED = 20
+MAX_PEER_CONNECTED = 12
 
 class Tracker(Thread):      
         
@@ -142,7 +142,6 @@ class Tracker(Thread):
                 track.connected_peers.append(new_peer)
                 time.sleep(2)
             track.amount_of_connected_peers = len(track.connected_peers)
-            time.sleep(20000)
 
         def get_on_well_with_peer_mng(track,peer_mng):
             track.peer_mng = peer_mng
