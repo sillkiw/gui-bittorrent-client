@@ -65,10 +65,10 @@ class HeadWindow(tk.Tk): #главное окно
 
 
     def set_button_panel(head):
-        head.buttons_frame = ttk.Frame(head)
-        head.delete_button_photo = tk.PhotoImage(file=r"images/file_icon.png")
-        head.delete_button_photo = head.delete_button_photo.subsample(5,8)
-        head.delete_button = ttk.Button(head.buttons_frame,text='Delete',command=head.delete_torrent)
+        head.buttons_frame = tk.Frame(head,background='white')
+        head.delete_button_photo = tk.PhotoImage(file=r"images/delete_button.png")
+        head.delete_button_photo = head.delete_button_photo.subsample(2,2)
+        head.delete_button = tk.Button(head.buttons_frame,text='Delete',image=head.delete_button_photo,command=head.delete_torrent)
         head.delete_button.pack(side=tk.LEFT)
         head.buttons_frame.pack(fill=tk.X)
 
