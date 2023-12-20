@@ -126,21 +126,24 @@ class Tracker(Thread):
    
         
         def run(track):
-            for peer_form in track.list_of_peers_form:
-                if len(track.connected_peers) > MAX_PEER_CONNECTED:
+            i = 0
+            while i < len(track.list_of_peers_form):
+                if len(track.peer_mng.peers) > MAX_PEER_CONNECTED:
                     time.sleep(50)
                     continue
+                peer_form = track.list_of_peers_form[i]
                 ip = peer_form['ip']
                 port = peer_form['port']
                 new_peer = Peer(ip,port,track)
                 print(f"Попытка подключения к {new_peer.ip}")
                 if not new_peer.connect():
                     print(f"Не удалось подключиться к {new_peer.ip}")
+                    i+=1
                     continue
                 print(f"Получилось подключиться к {new_peer.ip}")
                 track.peer_mng.handshake_with_peer(new_peer)
-
                 track.connected_peers.append(new_peer)
+                i+=1
                 time.sleep(15)
             track.amount_of_connected_peers = len(track.connected_peers)
 
