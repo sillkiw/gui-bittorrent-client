@@ -3,12 +3,12 @@ from threading import Thread
 import messages
 from random import choice
 class PeerManager():
-    def __init__(pmg,tracker,piece_mng):
+    def __init__(pmg,tracker,piece_manager):
         pmg.tracker = tracker
         pmg.peers = []
         pmg.handshake_message = handshake_msg_to_bytes(pmg.tracker.peer_id,pmg.tracker.info_hash)
         pmg.peer_thread = {}
-        pmg.piece_mng = piece_mng
+        pmg.piece_mng = piece_manager
     
 
     def handshake(pmg,peer):
@@ -22,9 +22,9 @@ class PeerManager():
     def handshake_with_peer(pmg,peer):
         if pmg.handshake(peer):
             pmg.peers.append(peer)
-            hash = peer.__hash__()
-            pmg.peer_thread[hash] = Thread(target=pmg.start_to_listen,args=(peer,))
-            pmg.peer_thread[hash].start()
+            
+            Thread(target=pmg.start_to_listen,args=(pmg.peers[-1],)).start()
+        
         else: 
             print(f"Не получилось отправить сообщение Handshake к {peer.ip}")
             pmg.remove_peer(peer)
@@ -60,6 +60,7 @@ class PeerManager():
         elif message_id == messages.REQUEST_MESSAGE_ID:
             peer.handle_request(message)
         elif message_id == messages.PIECE_MESSAGE_ID:
+            peer.activity_factor += 1
             print(f"Получение сообщения 'Piece' от {peer.ip}")
             pmg.piece_mng.handle_piece(message)
         elif message_id == messages.CANCEL_MESSAGE_ID:
@@ -75,6 +76,7 @@ class PeerManager():
             peer.socket.close()
         except Exception:
             pass
+        pmg.peer_thread[peer.__hash__()]
         pmg.peers.remove(peer)
 
     def read_from_socket(pmg,sock):
@@ -93,9 +95,11 @@ class PeerManager():
     def count_unchoked_peers(pmg):
         count = 0
         for peer in pmg.peers:
-            if peer.is_unchoked:
+            if peer.is_unchoked and peer.show:
                 count += 1
         return count
+
+    
 
     def handshake(pmg,peer):
         try:
@@ -118,5 +122,8 @@ class PeerManager():
                 return True
         return False
     
-    def get_on_well_piece_mng(pmg,piece_mng):
-        pmg.piece_mng = piece_mng
+    def update_peers(pmg):
+        for peer in pmg.peers:
+            if peer.activity_factor == 0:
+                peer.show = False
+            peer.activity_factor = 0
