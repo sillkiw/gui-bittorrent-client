@@ -95,7 +95,7 @@ class PeerManager():
     def count_unchoked_peers(pmg):
         count = 0
         for peer in pmg.peers:
-            if peer.is_unchoked and peer.show:
+            if peer.is_unchoked():
                 count += 1
         return count
 
@@ -122,8 +122,4 @@ class PeerManager():
                 return True
         return False
     
-    def update_peers(pmg):
-        for peer in pmg.peers:
-            if peer.activity_factor == 0:
-                peer.show = False
-            peer.activity_factor = 0
+
