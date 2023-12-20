@@ -153,40 +153,48 @@ class winfoWindow(tk.Toplevel):
             r = winfo.size
             winfo.file_system.insert(parent="",index = "end",text= name_of_one_file,values = [r])
         elif winfo.torrent.kind_file == Torrent._Kinds_of_file.MULTIPLE_FILE:
-           name_and_size = {}
-           all = deepcopy(winfo.torrent.files2)
-           file_table = create_file_system(winfo.torrent.file_name,winfo.torrent.length,all,name_and_size)
-           file_table = file_table.to_dict()
-           children = file_table[winfo.torrent.file_name]['children']
-           id = {"folder":1,"file":-1}
-           winfo.file_system.insert('','end',text = winfo.torrent.file_name,iid = id["folder"],values=[convert(name_and_size[winfo.torrent.file_name])],open=True)
-           id['folder']+=1
-           for file in children:
-               if isinstance(file,dict):
-                   name = list(file.keys())[0]
-                   children = file[name]['children']
-                   winfo.file_system.insert('','end',text = name,iid = id["folder"],values=[convert(name_and_size[name])])
-                   winfo.file_system.move(id["folder"],1,1000000)
-                   id["folder"] += 1
-                   winfo.cont(children,id,name_and_size)
-               else:
-                   winfo.file_system.insert('','end',text = file,iid = id["file"],values=[convert(name_and_size[file])])
-                   winfo.file_system.move(id["file"],1,1000000)
-                   id["file"] -= 1
-                   
-    def cont(winfo,children,id,name_and_size):
-        for child in children:
-            if isinstance(child,dict):
-                name = list(children_next.keys())[0]
-                children_next = child[name]['children']
-                winfo.file_system.insert('','end',iid  = id["folder"],text = name,values=[convert(name_and_size[name])])
-                winfo.file_system.move(id["folder"],id["folder"]-1,10000)
+           winfo.magic()
+        
+
+
+
+
+
+
+    def magic(winfo):        
+        name_and_size = {}
+        all = deepcopy(winfo.torrent.files2)
+        file_table = create_file_system(winfo.torrent.file_name,winfo.torrent.length,all,name_and_size)
+        file_table = file_table.to_dict()
+        children = file_table[winfo.torrent.file_name]['children']
+        id = {"folder":1,"file":-1}
+        winfo.file_system.insert('','end',text = winfo.torrent.file_name,iid = id["folder"],values=[convert(name_and_size[winfo.torrent.file_name])],open=True)
+        id['folder']+=1
+        for file in children:
+            if isinstance(file,dict):
+                name = list(file.keys())[0]
+                children = file[name]['children']
+                winfo.file_system.insert('','end',text = name,iid = id["folder"],values=[convert(name_and_size[name])])
+                winfo.file_system.move(id["folder"],1,1000000)
                 id["folder"] += 1
-                winfo.cont(children_next,id,name_and_size)
+                winfo.cont(children,id,name_and_size)
             else:
-                    winfo.file_system.insert('','end',iid = id["file"],text = child,values=[convert(name_and_size[child])])
-                    winfo.file_system.move(id["file"],id["folder"]-1,1000000)
-                    id["file"] -= 1
+                winfo.file_system.insert('','end',text = file,iid = id["file"],values=[convert(name_and_size[file])])
+                winfo.file_system.move(id["file"],1,1000000)
+                id["file"] -= 1      
+        def cont(winfo,children,id,name_and_size):
+                for child in children:
+                    if isinstance(child,dict):
+                        name = list(children_next.keys())[0]
+                        children_next = child[name]['children']
+                        winfo.file_system.insert('','end',iid  = id["folder"],text = name,values=[convert(name_and_size[name])])
+                        winfo.file_system.move(id["folder"],id["folder"]-1,10000)
+                        id["folder"] += 1
+                        winfo.cont(children_next,id,name_and_size)
+                    else:
+                            winfo.file_system.insert('','end',iid = id["file"],text = child,values=[convert(name_and_size[child])])
+                            winfo.file_system.move(id["file"],id["folder"]-1,1000000)
+                            id["file"] -= 1
                     
 
         
