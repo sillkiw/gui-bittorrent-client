@@ -40,7 +40,7 @@ class PieceManager:
         piemng.pieces[piece_index].put_to_block(block_offset,block_data)
 
         if piemng.pieces[piece_index].all_blocks_full():
-            if piemng.pieces[piece_index].set_to_full():
+            if piemng.pieces[piece_index].relief_piece_from_buff():
                 piemng.complete_pieces += 1
 
  
