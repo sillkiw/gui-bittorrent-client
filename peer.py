@@ -28,7 +28,7 @@ class Peer:
     def connect(pr):
         try:
             pr.socket = socket.create_connection((pr.ip,pr.port),timeout=0.3)
-            pr.socket.setblocking(False)
+            pr.socket.settimeout(0.05)
             pr.alive = True
         except Exception as e:
             return False
