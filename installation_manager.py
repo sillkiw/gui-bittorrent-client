@@ -17,10 +17,9 @@ class Installation_MNG(multiprocessing.Process):
 
     #Переопределение метода run в Process
     def run(imng):
-
         imng.initialize_tracker_and_managers()
         imng.display_progress()
-
+ 
         while not imng.piece_mng.all_pieces_full():
             if not imng.peer_mng.has_unchoked_peers():
                 time.sleep(2)
@@ -43,7 +42,8 @@ class Installation_MNG(multiprocessing.Process):
                 piece_index,block_offset,block_length = block_data  
                 request_msg = messages.request_msg_to_bytes(piece_index,block_offset,block_length)
                 peer.sent_message(request_msg)
-            time.sleep(0.1)
+            time.sleep(0.01)
+            imng.peer_mng.update_peers()
             imng.display_progress()
         
 
@@ -65,9 +65,10 @@ class Installation_MNG(multiprocessing.Process):
 
 
     def initialize_tracker_and_managers(imng):
+        imng.torrent.init_files()
         imng.tracker = Tracker(imng.torrent)
         imng.piece_mng = PieceManager(imng.torrent)
-        imng.peer_mng = PeerManager(imng.tracker)
+        imng.peer_mng = PeerManager(imng.tracker,imng.piece_mng)
         imng.tracker.get_on_well_with_peer_mng(imng.peer_mng)
         imng.tracker.connect_with_trackers()
         imng.tracker.start()
