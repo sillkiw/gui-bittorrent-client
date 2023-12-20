@@ -13,7 +13,8 @@ class Peer:
         pr.socket = None
         pr.alive =False
         pr.last_call = 0.0
-        pr.fill_factor = 0
+        pr.fill_factor = []
+        pr.show = True
         pr.activity_factor = 0
         pr.bitfield = BitArray(pr.tracker.torrent.number_of_pieces)
         #Начальные значения состояний подключения по спецификации таие
@@ -29,7 +30,6 @@ class Peer:
             pr.socket = socket.create_connection((pr.ip,pr.port),timeout=0.3)
             pr.socket.setblocking(False)
             pr.alive = True
-            pr.activity_factor = 100
         except Exception as e:
             return False
         return  True
@@ -66,8 +66,7 @@ class Peer:
             print(f"Получено ответное сообщение \"HandShake\" от {pr.ip}")
             return True
         except Exception as e:
-            print(e)
-            #print(f"Пир {pr.ip} не отправил ответный Handshake message/ или допустил в нем ошибку")
+            print(f"Пир {pr.ip} не отправил ответный Handshake message/ или допустил в нем ошибку")
             pr.alive = False
         return False
     
@@ -147,7 +146,7 @@ class Peer:
             total_length = message_len_ + messages.LEN
 
             if len(pr.answer_from_me) < total_length:
-                #Заявленный размер не соответсвует реальному размеру сообщению
+                #Заявленный размер не соответсвует реальному размеру сообщения
                 break
             else:
                 undetermine_message = pr.answer_from_me[:total_length]
