@@ -21,6 +21,7 @@ class Piece:
         if pie.number_of_blocks > 1:
             for i in range(pie.number_of_blocks):
                 pie.blocks.append(Block())
+
             if (pie.piece_size % BLOCK_SIZE) > 0:
                 pie.blocks[pie.number_of_blocks-1].block_size = pie.piece_size % BLOCK_SIZE
         else:
