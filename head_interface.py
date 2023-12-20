@@ -48,15 +48,30 @@ class HeadWindow(tk.Tk): #главное окно
         head.installation_form_list = {}
         #Список торрентов
         head.torrent_list = []
+        #Инициализация панели инструментов
+        head.set_tool_bar()
+        #Инизицалиция панели с кнопками
+        head.set_button_panel()
         #Обзорщик установок
         head.frame_viewer = tk.Frame(head)
         head.viewer = ttk.Treeview(head.frame_viewer,show="headings")
         head.viewer.pack(fill=tk.BOTH,expand=True)
         head.fill_viewer_collums()
         head.frame_viewer.pack(fill=tk.BOTH,expand=True)
-        #Установка панели инструментов
-        head.set_tool_bar() 
+       
+   
+       
         
+
+
+    def set_button_panel(head):
+        head.buttons_frame = ttk.Frame(head)
+        head.delete_button_photo = tk.PhotoImage(file=r"images/file_icon.png")
+        head.delete_button_photo = head.delete_button_photo.subsample(5,8)
+        head.delete_button = ttk.Button(head.buttons_frame,text='Delete',command=head.delete_torrent)
+        head.delete_button.pack(side=tk.LEFT)
+        head.buttons_frame.pack(fill=tk.X)
+
     #Функция создания панели инструментов(Open|Edit|View)
     def set_tool_bar(head):
         #Функция открытия файловой системы и выбора файла
@@ -123,7 +138,8 @@ class HeadWindow(tk.Tk): #главное окно
             head.viewer.column(inf,anchor = "w")
             #Инициализация строк
             head.viewer.heading(inf,text = inf,anchor = "w")
- 
+    def delete_torrent(head):
+        pass
 
 if __name__ == "__main__":
     window = HeadWindow()
