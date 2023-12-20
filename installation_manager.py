@@ -25,6 +25,7 @@ class Installation_MNG(multiprocessing.Process):
                 time.sleep(2)
                 print("Все пиры задушены =(")
                 continue
+           
             for piece in imng.piece_mng.pieces:
                 index = piece.piece_index
 
@@ -42,9 +43,10 @@ class Installation_MNG(multiprocessing.Process):
                 piece_index,block_offset,block_length = block_data  
                 request_msg = messages.request_msg_to_bytes(piece_index,block_offset,block_length)
                 peer.sent_message(request_msg)
-            time.sleep(0.2)
             #imng.peer_mng.check_peers()
+            time.sleep(0.2)
             imng.display_progress()
+
         
 
         imng.display_progress(status = 'Finished')
