@@ -16,6 +16,7 @@ class Peer:
         pr.fill_factor = []
         pr.show = True
         pr.activity_factor = 0
+        pr.requests = 0
         pr.bitfield = BitArray(pr.tracker.torrent.number_of_pieces)
         #Начальные значения состояний подключения по спецификации таие
         pr.state = {
@@ -28,7 +29,7 @@ class Peer:
     def connect(pr):
         try:
             pr.socket = socket.create_connection((pr.ip,pr.port),timeout=0.3)
-            pr.socket.settimeout(0.05)
+            pr.socket.settimeout(0)
             pr.alive = True
         except Exception as e:
             return False
