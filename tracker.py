@@ -123,7 +123,8 @@ class Tracker(Thread):
                
                peer_form = make_peer_form(peer_ip,peer_port)
                track.list_of_peers_form.append( peer_form )
-   
+
+
         
         def run(track):
             i = 0
@@ -144,7 +145,7 @@ class Tracker(Thread):
                 track.peer_mng.handshake_with_peer(new_peer)
                 track.connected_peers.append(new_peer)
                 i+=1
-                time.sleep(15)
+                time.sleep(6)
             track.amount_of_connected_peers = len(track.connected_peers)
 
         def get_on_well_with_peer_mng(track,peer_mng):
