@@ -54,7 +54,9 @@ class HeadWindow(tk.Tk): #главное окно
         head.set_button_panel()
         #Обзорщик установок
         head.frame_viewer = tk.Frame(head)
-        head.viewer = ttk.Treeview(head.frame_viewer,show="headings")
+        head.style = ttk.Style()
+        head.style.configure("Heading.Treeview", font=('Segoe UI',11))
+        head.viewer = ttk.Treeview(head.frame_viewer,show="headings",style="Heading.Treeview")
         head.viewer.pack(fill=tk.BOTH,expand=True)
         head.fill_viewer_collums()
         head.frame_viewer.pack(fill=tk.BOTH,expand=True)
@@ -68,7 +70,7 @@ class HeadWindow(tk.Tk): #главное окно
         head.buttons_frame = tk.Frame(head,background='white')
         head.delete_button_photo = tk.PhotoImage(file=r"images/delete_button.png")
         head.delete_button_photo = head.delete_button_photo.subsample(2,2)
-        head.delete_button = tk.Button(head.buttons_frame,text='Delete',image=head.delete_button_photo,command=head.delete_torrent)
+        head.delete_button = tk.Button(head.buttons_frame,highlightcolor='white',text='Delete',foreground="white",border=0,background='white',default='disabled',image=head.delete_button_photo,command=head.delete_torrent)
         head.delete_button.pack(side=tk.LEFT)
         head.buttons_frame.pack(fill=tk.X)
 
@@ -122,7 +124,7 @@ class HeadWindow(tk.Tk): #главное окно
         id = len(head.torrent_list)
         #Размещение строки в обзорщик установки
         head.viewer.insert(parent="",index = "end",iid = id,
-                           values = (torrent.name,torrent.size,"0%","Downloading...","0(0)"))
+                           values = (torrent.name,torrent.size,"0%","Initializing...","0(0)"))
         #Начало установки
         head.installation_form_list[id] = InstallationForm(head,torrent,id)
         head.installation_form_list[id].begin()
