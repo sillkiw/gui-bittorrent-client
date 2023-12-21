@@ -29,7 +29,7 @@ class Peer:
     def connect(pr):
         try:
             pr.socket = socket.create_connection((pr.ip,pr.port),timeout=0.3)
-            pr.socket.settimeout(0)
+           
             pr.alive = True
         except Exception as e:
             return False
@@ -158,7 +158,7 @@ class Peer:
                 if recv_message:
                     yield recv_message
             except Exception as e:
-                print(e.__str__)
+                break
     
     def __hash__(pr):
         return "%s:%d" % (pr.ip, pr.port)
