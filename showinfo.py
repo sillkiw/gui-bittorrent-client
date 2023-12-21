@@ -182,20 +182,20 @@ class winfoWindow(tk.Toplevel):
                 winfo.file_system.insert('','end',text = file,iid = id["file"],values=[convert(name_and_size[file])])
                 winfo.file_system.move(id["file"],1,1000000)
                 id["file"] -= 1      
-        def cont(winfo,children,id,name_and_size):
-                for child in children:
-                    if isinstance(child,dict):
-                        name = list(children_next.keys())[0]
-                        children_next = child[name]['children']
-                        winfo.file_system.insert('','end',iid  = id["folder"],text = name,values=[convert(name_and_size[name])])
-                        winfo.file_system.move(id["folder"],id["folder"]-1,10000)
-                        id["folder"] += 1
-                        winfo.cont(children_next,id,name_and_size)
-                    else:
-                            winfo.file_system.insert('','end',iid = id["file"],text = child,values=[convert(name_and_size[child])])
-                            winfo.file_system.move(id["file"],id["folder"]-1,1000000)
-                            id["file"] -= 1
-                    
+    def cont(winfo,children,id,name_and_size):
+        for child in children:
+            if isinstance(child,dict):
+                name = list(children_next.keys())[0]
+                children_next = child[name]['children']
+                winfo.file_system.insert('','end',iid  = id["folder"],text = name,values=[convert(name_and_size[name])])
+                winfo.file_system.move(id["folder"],id["folder"]-1,10000)
+                id["folder"] += 1
+                winfo.cont(children_next,id,name_and_size)
+            else:
+                    winfo.file_system.insert('','end',iid = id["file"],text = child,values=[convert(name_and_size[child])])
+                    winfo.file_system.move(id["file"],id["folder"]-1,1000000)
+                    id["file"] -= 1
+                
 
         
 #Вспомогательная функция для разделения префикса 
