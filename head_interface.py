@@ -23,9 +23,9 @@ class InstallationForm:
     def updater(install_form):
         while True:
             #Ожидания ответа от установочного процесса
-            progress,status,peers= install_form.from_install.recv()
+            progress,status,peers,speed= install_form.from_install.recv()
             #Изменение графы на экране
-            install_form.head.viewer.item(install_form.id,text = "",values=(install_form.name,install_form.size,progress,status,peers))
+            install_form.head.viewer.item(install_form.id,text = "",values=(install_form.name,install_form.size,progress,status,peers,speed))
 
     def begin(install_form):
         install_form.updater_thread.start()
@@ -124,14 +124,14 @@ class HeadWindow(tk.Tk): #главное окно
         id = len(head.torrent_list)
         #Размещение строки в обзорщик установки
         head.viewer.insert(parent="",index = "end",iid = id,
-                           values = (torrent.name,torrent.size,"0%","Initializing...","0(0)"))
+                           values = (torrent.name,torrent.size,"0%","Initializing...","0(0)","∞"))
         #Начало установки
         head.installation_form_list[id] = InstallationForm(head,torrent,id)
         head.installation_form_list[id].begin()
 
     #Обзорщик установо5к
     def fill_viewer_collums(head):
-        columns =  ["Name","Size","Progress","Status","Peers"]
+        columns =  ["Name","Size","Progress","Status","Peers","Speed"]
         head.viewer['columns'] = tuple(columns)
         head.viewer.column("#0")
         head.viewer.heading("#0")
