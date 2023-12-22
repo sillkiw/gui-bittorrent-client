@@ -60,9 +60,10 @@ class PeerManager():
         elif message_id == messages.REQUEST_MESSAGE_ID:
             peer.handle_request(message)
         elif message_id == messages.PIECE_MESSAGE_ID:
-            peer.activity_factor += 1
-            print(f"Получение сообщения 'Piece' от {peer.ip}")
-            pmg.piece_mng.handle_piece(message)
+            print(f"Получение сообщения PIECE от {peer.ip}")
+            if pmg.piece_mng.handle_piece(message):
+                peer.piece_message_receive += 1
+         
         elif message_id == messages.CANCEL_MESSAGE_ID:
             peer.handle_cancel()
         elif message_id == messages.PORT_MESSAGE_ID:
@@ -76,7 +77,7 @@ class PeerManager():
             peer.socket.close()
         except Exception:
             pass
-        pmg.peer_thread[peer.__hash__()]
+        peer.alive = False
         pmg.peers.remove(peer)
 
     def read_from_socket(pmg,sock):
@@ -97,7 +98,6 @@ class PeerManager():
             if peer.is_unchoked():
                 count += 1
         return count
-
     
 
     def handshake(pmg,peer):
@@ -121,10 +121,10 @@ class PeerManager():
                 return True
         return False
     
-    
-    def update_peers(pmg):
+    def check_peers(pmg):
         for peer in pmg.peers:
-            if peer.requests > 0 and peer.activity_factor == 0:
+            if peer.requets_message_sent > 0 and peer.piece_message_receive == 0:
                 pmg.remove_peer(peer)
             
+
 
