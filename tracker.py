@@ -10,7 +10,7 @@ from peer_manager import PeerManager
 from threading import Thread
 
 
-MAX_PEER_CONNECTED = 25
+MAX_PEER_CONNECTED = 12 
 
 class Tracker(Thread):      
         
@@ -75,7 +75,7 @@ class Tracker(Thread):
             try:
                 url_socket = socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
                 url_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-                url_socket.settimeout(1)
+                url_socket.settimeout(3)
 
                 ip,port = socket.gethostbyname(parsed.hostname),parsed.port
 
