@@ -36,12 +36,17 @@ class PieceManager:
 
         if piemng.pieces[piece_index].is_full:
             return
-        
-        piemng.pieces[piece_index].put_to_block(block_offset,block_data)
+        try:
+            piemng.pieces[piece_index].put_to_block(block_offset,block_data)
 
-        if piemng.pieces[piece_index].all_blocks_full():
-            if piemng.pieces[piece_index].relief_piece_from_buff():
-                piemng.complete_pieces += 1
+            if piemng.pieces[piece_index].all_blocks_full():
+                if piemng.pieces[piece_index].relief_piece_from_buff():
+                    piemng.bitfield[piece_index] = 1
+                    piemng.complete_pieces += 1
+        except Exception:
+            return False
+        
+        return True
 
  
 
