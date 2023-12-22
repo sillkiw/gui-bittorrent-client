@@ -10,7 +10,7 @@ from peer_manager import PeerManager
 from threading import Thread
 
 
-MAX_PEER_CONNECTED = 12 
+MAX_PEER_CONNECTED = 20
 
 class Tracker(Thread):      
         
