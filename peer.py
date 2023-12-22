@@ -14,10 +14,10 @@ class Peer:
         pr.alive =False
         pr.last_call = 0.0
         pr.fill_factor = []
-        pr.show = True
-        pr.activity_factor = 0
-        pr.requests = 0
-        pr.bitfield = BitArray(pr.tracker.torrent.number_of_pieces)
+        pr.piece_message_receive = 0
+        pr.requets_message_sent = 0
+        pr.number_of_pieces = pr.tracker.torrent.number_of_pieces
+        pr.bitfield = BitArray(pr.number_of_pieces)
         #Начальные значения состояний подключения по спецификации таие
         pr.state = {
             'am_choking' : True,
@@ -29,7 +29,7 @@ class Peer:
     def connect(pr):
         try:
             pr.socket = socket.create_connection((pr.ip,pr.port),timeout=0.3)
-           
+            pr.socket.setblocking(False)
             pr.alive = True
         except Exception as e:
             return False
@@ -56,7 +56,9 @@ class Peer:
             pr.socket.send(msg)
             pr.last_call = time.time()
         except Exception as e:
-            pr.activity_factor = 0
+            pr.alive = False
+            return False
+        return True
             
     
     def handle_handshake(pr):
