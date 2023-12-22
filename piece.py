@@ -13,7 +13,11 @@ class Piece:
         pie.is_full = False
         pie.number_of_blocks = int(math.ceil(float(piece_size)/BLOCK_SIZE))
         pie.init_blocks()
-
+    
+    def update_block_status(pie):  
+        for i, block in enumerate(pie.blocks):
+            if block.state == State.PEDNING and (time.time() - block.last_seen) > 5:
+                pie.blocks[i].state = State.FREE
 
     def init_blocks(pie):
         pie.blocks = []
@@ -64,9 +68,6 @@ class Piece:
             f.write(pie.data[piece_offset:piece_offset+legnth])
             f.close()
 
-
-
-
     def merge_blocks(pie):
         buf = b''
         for block in pie.blocks:
@@ -83,6 +84,7 @@ class Piece:
                 pie.blocks[i].last_seen = time.time()
                 block_offset = i * BLOCK_SIZE
                 return pie.piece_index, block_offset, pie.blocks[i].block_size
+        return None
     
     def all_blocks_full(pie):
         for block in pie.blocks:
