@@ -64,11 +64,15 @@ class HeadWindow(tk.Tk): #главное окно
 
     def set_button_panel(head):
         head.buttons_frame = tk.Frame(head,background='white')
-        
+
+        head.logo_photo = tk.PhotoImage(file=r"images/logo.png")    
+        head.logo_photo = head.logo_photo.subsample(4,5)
+        tk.Label(head.buttons_frame,image=head.logo_photo,border=7,background="black").pack(side = tk.LEFT)
+
         head.delete_button_photo = tk.PhotoImage(file=r"images/delete_button.png")
-        head.delete_button_photo = head.delete_button_photo.subsample(4,4)
+        head.delete_button_photo = head.delete_button_photo.subsample(2,2)
         
-        head.delete_button = tk.Button(head.buttons_frame,highlightcolor='white',text='Delete',foreground="white",border=0,background='white',default='disabled',image=head.delete_button_photo,command=head.delete_torrent)
+        head.delete_button = tk.Button(head.buttons_frame,highlightcolor='white',text='Delete',foreground="white",activebackground="white",height=55,border=0,background='white',default='active',image=head.delete_button_photo,command=head.delete_torrent)
         head.delete_button.pack(side=tk.LEFT)
         
         
@@ -79,9 +83,12 @@ class HeadWindow(tk.Tk): #главное окно
         head.frame_viewer = tk.Frame(head)
 
         head.style = ttk.Style()
-        head.style.configure("Heading.Treeview", font=('Helvetica',11))
+        
+        head.style.configure("mystyle.Treeview",font=('Helvetica',13),foreground='blue')
+        head.style.configure("mystyle.Treeview.Heading", background="light ",font=('Helvetica', 11))
 
-        head.viewer = ttk.Treeview(head.frame_viewer,show="headings",style="Heading.Treeview")
+        head.viewer = ttk.Treeview(head.frame_viewer,show="headings",style="mystyle.Treeview")
+        head.viewer.tag_configure('tor', background='#E8E8E8')
         head.viewer.pack(fill=tk.BOTH,expand=True)
         head.set_columns_and_fill_headings()
 
