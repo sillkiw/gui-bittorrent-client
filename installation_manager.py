@@ -87,7 +87,7 @@ class Installation_MNG(multiprocessing.Process):
         imng.progress = update_progression
         imng.progress_in_per = round(float((float(imng.progress)/imng.torrent.length) * 100),2)
     
-        imng.to_head.send((str(imng.progress_in_per)+"%",status,f'{number_of_active_peers}({number_of_inactive_peers})',f'{imng.speed}/s'))
+        imng.to_head.send((str(imng.progress_in_per)+"%",status,f'{number_of_active_peers}({number_of_inactive_peers})',f'{imng.speed}'))
 
 
     def initialize_tracker_and_managers(imng):
