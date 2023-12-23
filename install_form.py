@@ -19,7 +19,7 @@ class InstallationForm:
     #Размещение установочной формы на экран
     def pack_to_viewer(install_form):
         install_form.head.viewer.insert(parent="",index = "end",iid = install_form.id,
-                           values = (install_form.name,install_form.size,"0.0%","Initializing...","0(0)","∞")) 
+                           values = (install_form.name,install_form.size,"0.0%","Initializing...","0(0)","∞"),tags = ('tor')) 
         
     #Обновление установочной формы
     def updater(install_form):
