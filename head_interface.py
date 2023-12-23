@@ -2,144 +2,145 @@ import tkinter as tk
 from tkinter import filedialog as fd
 from tkinter import ttk
 from showinfo import winfoWindow
-from installation_manager import Installation_MNG
-from multiprocessing import Pipe
-import threading
-
-#Установочные формы
-class InstallationForm:
-    def __init__(install_form,head,torrent,id):
-        install_form.head = head
-        install_form.name = torrent.name
-        install_form.size = torrent.size
-        install_form.id = id
-        #Труба для обмена сообщениями между установочным процессорои и графическим интерфейсом
-        install_form.to_head,install_form.from_install = Pipe()
-        #Установочный процесс
-        install_form.installation_mng = Installation_MNG(torrent,install_form.to_head)
-        #Поток для изменения информации на экране
-        install_form.updater_thread = threading.Thread(target=install_form.updater)
-        
-    def updater(install_form):
-        while True:
-            #Ожидания ответа от установочного процесса
-            progress,status,peers,speed= install_form.from_install.recv()
-            #Изменение графы на экране
-            install_form.head.viewer.item(install_form.id,text = "",values=(install_form.name,install_form.size,progress,status,peers,speed))
-
-    def begin(install_form):
-        install_form.updater_thread.start()
-        install_form.installation_mng.start()
-        
+from install_form import InstallationForm
+import sys
 
 class HeadWindow(tk.Tk): #главное окно
     def __init__(head):
         super().__init__()    
+
         head.title('PirTorrent')
+
         head.sc_width = head.winfo_screenwidth()
         head.sc_height = head.winfo_screenheight()
+
         head.head_width = head.sc_width//2 + head.sc_width//4 #ширина главного окна
         head.head_height = head.sc_height//2 + head.sc_height//4 #высота главного окна
+
         head.geometry(f"{head.head_width}x{head.head_height}+{(head.sc_width - head.head_width)//2}+{(head.sc_height - head.head_height -100)//2}")
         head.iconbitmap("images/icon.ico")
-        #Инициализация списка труб для передачи информации между процессами
-        head.amount_of_installation = 0
+
         #Список установочных форм
         head.installation_form_list = {}
+
         #Список торрентов
         head.torrent_list = []
-        #Инициализация панели инструментов
+
+        #Установка панели инструментов
         head.set_tool_bar()
-        #Инизицалиция панели с кнопками
+
+        #Установка панели с кнопками
         head.set_button_panel()
-        #Обзорщик установок
-        head.frame_viewer = tk.Frame(head)
-        head.style = ttk.Style()
-        head.style.configure("Heading.Treeview", font=('Segoe UI',11))
-        head.viewer = ttk.Treeview(head.frame_viewer,show="headings",style="Heading.Treeview")
-        head.viewer.pack(fill=tk.BOTH,expand=True)
-        head.fill_viewer_collums()
-        head.frame_viewer.pack(fill=tk.BOTH,expand=True)
-       
-   
-       
-        
 
+        #Установка обзорщика установок
+        head.set_viewer()
+    
+    def ask_torrent_file(head): 
+        '''Выбор торрент-файла'''
+        #Пользователь выбирает торрент файл
+        head.target_torrent = fd.askopenfile(initialdir="C:\\",filetypes =[('Torrent Files', '*.torrent')]) 
+        if head.target_torrent:
+            head.open_torrent_information_window()
 
-    def set_button_panel(head):
-        head.buttons_frame = tk.Frame(head,background='white')
-        head.delete_button_photo = tk.PhotoImage(file=r"images/delete_button.png")
-        head.delete_button_photo = head.delete_button_photo.subsample(2,2)
-        head.delete_button = tk.Button(head.buttons_frame,highlightcolor='white',text='Delete',foreground="white",border=0,background='white',default='disabled',image=head.delete_button_photo,command=head.delete_torrent)
-        head.delete_button.pack(side=tk.LEFT)
-        head.buttons_frame.pack(fill=tk.X)
-
-    #Функция создания панели инструментов(Open|Edit|View)
     def set_tool_bar(head):
-        #Функция открытия файловой системы и выбора файла
-        def open_file_system(): 
-            #Пользователь выбирает торрент файл
-            head.target_torrent = fd.askopenfile(initialdir="C:\\",filetypes =[('Torrent Files', '*.torrent')]) 
-            head.show_info_ab_file()
+        '''Установка панели инструментов Open|Edit|View'''
 
         #Инициализация панели инструментов (Open|Edit|View)
         main_menu = tk.Menu(head) 
-        #Всплывающее окно для File
+       
+        #При нажатии на File
         file_menu = tk.Menu(tearoff=0)
-        file_menu.add_command(label="Open...",command=open_file_system) #Open... открывает обзор файловой системы
-        file_menu.add_command(label="Open url...")
+        file_menu.add_command(label="Open...",command=head.ask_torrent_file) 
         file_menu.add_separator()
-        file_menu.add_command(label="Exit")
+        file_menu.add_command(label="Exit",command=sys.exit)
+        
         #Инициализация(File|Edit|View) 
         main_menu.add_cascade(label="File",menu = file_menu)
         main_menu.add_cascade(label="Edit")
         main_menu.add_cascade(label="View")
+        
         #Бинд на главное окно
         head.config(menu=main_menu)
 
-    #Функция для вызова окна обзорщика файла
-    #@param file_name - путь до файла выбранного пользователем
-    def show_info_ab_file(head):
-        #Открытия окна обзорщика файловой системы торрент файла
-        # TODO: Реализовать проверку на дурака(пользователь добавляет один и тот же торрент несколько раз)(проверять части)
-        if  head.target_torrent != None:
-            #Запуск всплывающего окна
-            head.torrent_show = winfoWindow(head) 
-            head.check_user_action()
-            
+    def set_button_panel(head):
+        head.buttons_frame = tk.Frame(head,background='white')
+        
+        head.delete_button_photo = tk.PhotoImage(file=r"images/delete_button.png")
+        head.delete_button_photo = head.delete_button_photo.subsample(4,4)
+        
+        head.delete_button = tk.Button(head.buttons_frame,highlightcolor='white',text='Delete',foreground="white",border=0,background='white',default='disabled',image=head.delete_button_photo,command=head.delete_torrent)
+        head.delete_button.pack(side=tk.LEFT)
+        
+        
+        head.buttons_frame.pack(fill=tk.X)
 
-    #Проверка ответа пользователя     
-    def check_user_action(head):  
-        #Ожидание ответа пользователя
-        head.wait_window(head.torrent_show)
-        if head.torrent_show.state_of_answer == winfoWindow.__States_of_answer__.T_OPENED:
-                #Добавление выбранного торрента в список торрентов 
-                head.torrent_list.append(head.torrent_show.torrent) 
-                #Инициализация и начала установки
-                head.initalize_installation()
-    
-    #Инициализация и начала установки           
-    def initalize_installation(head):
-        torrent = head.torrent_list[-1]
-        id = len(head.torrent_list)
-        #Размещение строки в обзорщик установки
-        head.viewer.insert(parent="",index = "end",iid = id,
-                           values = (torrent.name,torrent.size,"0%","Initializing...","0(0)","∞"))
-        #Начало установки
-        head.installation_form_list[id] = InstallationForm(head,torrent,id)
-        head.installation_form_list[id].begin()
+    def set_viewer(head):
+        '''Установка обзорщика установок'''
+        head.frame_viewer = tk.Frame(head)
 
-    #Обзорщик установо5к
-    def fill_viewer_collums(head):
-        columns =  ["Name","Size","Progress","Status","Peers","Speed"]
-        head.viewer['columns'] = tuple(columns)
+        head.style = ttk.Style()
+        head.style.configure("Heading.Treeview", font=('Helvetica',11))
+
+        head.viewer = ttk.Treeview(head.frame_viewer,show="headings",style="Heading.Treeview")
+        head.viewer.pack(fill=tk.BOTH,expand=True)
+        head.set_columns_and_fill_headings()
+
+        head.frame_viewer.pack(fill=tk.BOTH,expand=True)
+
+    def set_columns_and_fill_headings(head):
+        '''Установка столбцов и заполнение заголовков'''
+        titles =  ["Name","Size","Progress","Status","Peers","Speed"]
+
+        wid = head.head_width
+        sizes = [wid//3+wid//10,wid//14,wid//8,wid//8,wid//14,wid//14]
+
+        head.viewer['columns'] = tuple(titles)
+
         head.viewer.column("#0")
         head.viewer.heading("#0")
-        for inf in columns:
-            #Инициализация столбцов
-            head.viewer.column(inf,anchor = "w")
-            #Инициализация строк
-            head.viewer.heading(inf,text = inf,anchor = "w")
+
+        for index,title in enumerate(titles):
+            #Инициализация столбца
+            head.viewer.column(title,anchor = "w",width=sizes[index])
+            #Инициализация заголовка
+            head.viewer.heading(title,text = title,anchor = "w")   
+
+   
+    def open_torrent_information_window(head):
+        '''Запуск всплывающего окна, если пользователь выбрал файл''' 
+        # TODO: Реализовать проверку на дурака(пользователь добавляет один и тот же торрент несколько раз)(проверять части)
+        #Инициализация и запуск всплывающего окна
+        head.torrent_show = winfoWindow(head) 
+        
+        head.check_state_of_answer()
+                 
+    def check_state_of_answer(head):  
+        '''Проверка действия пользователя. После нажатия Open в информационном окне начинается установка'''
+        
+        #Ожидание ответа пользователя
+        head.wait_window(head.torrent_show)
+        
+        if head.torrent_show.state_of_answer == winfoWindow.__States_of_answer__.T_OPENED:
+            #Добавление выбранного торрента в список торрентов 
+            head.torrent_list.append(head.torrent_show.torrent) 
+            #Инициализация и начала установки
+            head.initalize_installation()
+      
+    def initalize_installation(head):
+        '''Запуск нового процесса установки'''
+
+        torrent = head.torrent_list[-1]
+
+        #установка id для обновления информации о установке на экране
+        id = len(head.torrent_list)
+
+        #Начало установки
+        head.installation_form_list[id] = InstallationForm(head,torrent,id)
+        head.installation_form_list[id].pack_to_viewer()
+        head.installation_form_list[id].begin()
+
+
+
     def delete_torrent(head):
         pass
 
