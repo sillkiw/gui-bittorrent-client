@@ -4,10 +4,14 @@ from tracker import Tracker
 from piece_manager import PieceManager
 from block import State
 from hurry.filesize import size,alternative
-import multiprocessing,time,messages
+from enum import Enum
+import multiprocessing,time,messages,os
 
 class Installation_MNG(multiprocessing.Process):
-    def __init__(imng,torrent,to_head):
+
+    RUN,STOP,DELETE,FINISHED = range(0,4)
+
+    def __init__(imng,torrent,to_head,status):
         multiprocessing.Process.__init__(imng)
         #Инициализация трекера
         imng.torrent = torrent
@@ -19,16 +23,54 @@ class Installation_MNG(multiprocessing.Process):
         imng.sum_installation = 0
         imng.sum_time = 0
 
+        imng.status = status
+        imng.was_paused = False
+
     #Переопределение метода run в Process
     def run(imng):
         imng.initialize_tracker_and_managers()
         imng.display_progress(status='Initializing...')
         imng.time1 = time.time()
         while not imng.piece_mng.all_pieces_full():
+            if imng.status.value == Installation_MNG.RUN:
+                if imng.was_paused:
+                    imng.peer_mng.sent_all_peers_unchoke()
+                    imng.peer_mng.sent_all_peers_interested()
+                    imng.display_progress(status='Initializing...')
+                    imng.was_paused = False
+                imng.request_piecies()
+            elif imng.status.value == Installation_MNG.STOP:
+                if not(imng.was_paused):
+                    imng.peer_mng.sent_all_peers_choke()
+                    imng.peer_mng.sent_all_peers_notinterested()
+                    imng.display_progress(status='Stopped')
+                    imng.was_paused = True
+            elif imng.status.value ==  Installation_MNG.DELETE:
+                imng.delete_files()
+                break
+         
+
+        imng.status.value == Installation_MNG.FINISHED
+        imng.display_progress(status = 'Finished')
+       
+
+    def delete_files(imng):
+        for file in imng.torrent.file_names:
+            try:
+                os.remove(file['path'])
+            except Exception:
+                pass
+        if imng.torrent.kind_file == imng.torrent._Kinds_of_file.MULTIPLE_FILE:
+            try:
+                os.rmdir(imng.torrent.root)
+            except Exception:
+                pass
+
+    def request_piecies(imng):
             if not imng.peer_mng.has_unchoked_peers():
                 time.sleep(2)
                 print("Все пиры задушены =(")
-                continue
+                return
             
             for piece in imng.piece_mng.pieces:
                 index = piece.piece_index
@@ -55,14 +97,11 @@ class Installation_MNG(multiprocessing.Process):
             time.sleep(0.2)
             imng.time2 = time.time()
             imng.display_progress()
+
             if imng.progress_in_per % 10 == 0 and imng.progress_in_per:
                 imng.peer_mng.check_peers()
 
 
-        
-
-        imng.display_progress(status = 'Finished')
-        imng.close()
 
     def display_progress(imng,status = 'Downloading...'):
         update_progression = 0
@@ -73,26 +112,33 @@ class Installation_MNG(multiprocessing.Process):
                     update_progression += len(block.data)
         
         if status == 'Initializing...':
-            imng.speed = "∞"
+            imng.speed = "0"
         elif status == 'Finished':
+            imng.speed = ''
+        elif status == 'Stopped':
             imng.speed = ''
         elif update_progression != imng.progress:
             imng.sum_installation += update_progression
             imng.sum_time += imng.time2 - imng.time1
             imng.speed = round(imng.sum_installation/imng.sum_time,2)
-            imng.speed = size(imng.speed,system=alternative)
-        
-        number_of_active_peers = imng.peer_mng.count_unchoked_peers()
-        number_of_inactive_peers = len(imng.peer_mng.peers) - number_of_active_peers
+            imng.speed = size(imng.speed,system=alternative)+"/s"
+
+        if status == 'Finished' or status == 'Stopped':
+            peer_show = ''
+        else:
+            number_of_active_peers = imng.peer_mng.count_unchoked_peers()
+            number_of_inactive_peers = len(imng.peer_mng.peers) - number_of_active_peers
+            peer_show = f'{number_of_active_peers}({number_of_inactive_peers})'
+
         imng.progress = update_progression
         imng.progress_in_per = round(float((float(imng.progress)/imng.torrent.length) * 100),2)
-    
-        imng.to_head.send((str(imng.progress_in_per)+"%",status,f'{number_of_active_peers}({number_of_inactive_peers})',f'{imng.speed}/s'))
+        progress_show = f'{imng.progress_in_per}%'
+        imng.to_head.send((progress_show,status,peer_show,imng.speed))
 
 
     def initialize_tracker_and_managers(imng):
         imng.torrent.init_files()
-        imng.tracker = Tracker(imng.torrent)
+        imng.tracker = Tracker(imng.torrent,imng.status)
         imng.piece_mng = PieceManager(imng.torrent)
         imng.peer_mng = PeerManager(imng.tracker,imng.piece_mng)
         imng.tracker.get_on_well_with_peer_mng(imng.peer_mng)
