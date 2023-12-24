@@ -167,7 +167,6 @@ class HeadWindow(tk.Tk): #главное окно
         head.installation_form_list[id].begin()
 
 
-
     def delete_torrent(head):
         pass
 
