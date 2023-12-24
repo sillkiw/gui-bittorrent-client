@@ -35,12 +35,18 @@ class HeadWindow(tk.Tk): #главное окно
         #Установка обзорщика установок
         head.set_viewer()
     
-    def ask_torrent_file(head): 
+    def ask_torrent_file(head,chest = False): 
         '''Выбор торрент-файла'''
+        if chest:
+            head.chest_button.configure(image=head.open_chest_button_photo)
+            head.chest = chest
         #Пользователь выбирает торрент файл
         head.target_torrent = fd.askopenfile(initialdir="C:\\",filetypes =[('Torrent Files', '*.torrent')]) 
         if head.target_torrent:
             head.open_torrent_information_window()
+        elif chest:
+            head.chest_button.configure(image=head.chest_button_photo)
+            
 
     def set_tool_bar(head):
         '''Установка панели инструментов Open|Edit|View'''
@@ -68,6 +74,17 @@ class HeadWindow(tk.Tk): #главное окно
         head.logo_photo = tk.PhotoImage(file=r"images/logo.png")    
         head.logo_photo = head.logo_photo.subsample(4,5)
         tk.Label(head.buttons_frame,image=head.logo_photo,border=7,background="black").pack(side = tk.LEFT)
+
+     
+        head.chest_button_photo = tk.PhotoImage(file=r"images/chest.png")
+        head.open_chest_button_photo = tk.PhotoImage(file=r"images/chest_open.png")
+        head.chest_button_photo = head.chest_button_photo.subsample(3,5)
+        head.open_chest_button_photo = head.open_chest_button_photo.subsample(3,5)
+        head.chest = False
+
+        head.chest_button = tk.Button(head.buttons_frame,highlightcolor='white',text='Delete',foreground="white",activebackground="white",height=55,width=140,border=0,background='white',default='active',image=head.chest_button_photo,command=lambda : head.ask_torrent_file(chest = True))
+        head.chest_button.pack(side=tk.LEFT)
+
 
         head.delete_button_photo = tk.PhotoImage(file=r"images/delete_button.png")
         head.delete_button_photo = head.delete_button_photo.subsample(2,2)
@@ -127,6 +144,9 @@ class HeadWindow(tk.Tk): #главное окно
         #Ожидание ответа пользователя
         head.wait_window(head.torrent_show)
         
+        if head.chest:
+            head.chest_button.configure(image=head.chest_button_photo)
+
         if head.torrent_show.state_of_answer == winfoWindow.__States_of_answer__.T_OPENED:
             #Добавление выбранного торрента в список торрентов 
             head.torrent_list.append(head.torrent_show.torrent) 
