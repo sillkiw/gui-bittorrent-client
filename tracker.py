@@ -14,9 +14,10 @@ MAX_PEER_CONNECTED = 20
 
 class Tracker(Thread):      
         
-        def __init__(track,torrent):
+        def __init__(track,torrent,status):
             Thread.__init__(track)
             track.info_hash = hash.sha1(ben.bencode(torrent.info)).digest()
+            track.daemon = True
             track.peer_id = b'-PR7070-'+bytes([randint(0,9) for _ in range(12)])
             track.user_port = 6881
             track.left = torrent.length
@@ -24,6 +25,7 @@ class Tracker(Thread):
             track.torrent = torrent
             track.announce_list = torrent.announce_list
             track.list_of_peers_form = []
+            track.status = status
             track.parametrs_for_http_get = {
                 'info_hash' : track.info_hash,
                 'peer_id' : track.peer_id,
@@ -129,24 +131,26 @@ class Tracker(Thread):
         def run(track):
             i = 0
             while i < len(track.list_of_peers_form):
-                if len(track.peer_mng.peers) > MAX_PEER_CONNECTED:
-                    time.sleep(50)
-                    continue
-                peer_form = track.list_of_peers_form[i]
-                ip = peer_form['ip']
-                port = peer_form['port']
-                new_peer = Peer(ip,port,track)
-                print(f"Попытка подключения к {new_peer.ip}")
-                if not new_peer.connect():
-                    print(f"Не удалось подключиться к {new_peer.ip}")
+                if track.status.value == 0:
+                    if len(track.peer_mng.peers) > MAX_PEER_CONNECTED:
+                        time.sleep(50)
+                        continue
+                    peer_form = track.list_of_peers_form[i]
+                    ip = peer_form['ip']
+                    port = peer_form['port']
+                    new_peer = Peer(ip,port,track)
+                    print(f"Попытка подключения к {new_peer.ip}")
+                    if not new_peer.connect():
+                        print(f"Не удалось подключиться к {new_peer.ip}")
+                        i+=1
+                        continue
+                    print(f"Получилось подключиться к {new_peer.ip}")
+                    track.peer_mng.handshake_with_peer(new_peer)
+                    track.connected_peers.append(new_peer)
                     i+=1
-                    continue
-                print(f"Получилось подключиться к {new_peer.ip}")
-                track.peer_mng.handshake_with_peer(new_peer)
-                track.connected_peers.append(new_peer)
-                i+=1
-                time.sleep(6)
-            track.amount_of_connected_peers = len(track.connected_peers)
+                    time.sleep(6)
+                if track.status.value == 3 or track.status.value == 4:
+                    break
 
         def get_on_well_with_peer_mng(track,peer_mng):
             track.peer_mng = peer_mng
