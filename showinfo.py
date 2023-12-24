@@ -146,8 +146,12 @@ class winfoWindow(tk.Toplevel):
         winfo.vsb = ttk.Scrollbar(winfo.file_system_frame)
         winfo.vsb.pack(side = tk.RIGHT,fill=tk.Y)
 
+        winfo.tick_image = tk.PhotoImage(file=r"images/file_icon.png")
+        winfo.not_tick_image = tk.PhotoImage(file=r"images/file_icon.png") 
+
         #Установка файловой системы
         winfo.file_system = ttk.Treeview(winfo.file_system_frame,yscrollcommand=winfo.vsb.set)
+
         winfo.set_columns_and_fill_headings()
         winfo.fill_with_torrent_metainfo()
 
@@ -178,7 +182,7 @@ class winfoWindow(tk.Toplevel):
         winfo.create_dict_from_paths()
         winfo.show_in_file_system()
 
-        winfo.initialize_piece_manager()
+        
 
     def create_dict_from_paths(winfo):
         def _recurse(dic, chain):
@@ -201,10 +205,10 @@ class winfoWindow(tk.Toplevel):
     
     def insert_to_root_folder(winfo,name,folder,size = 0):
         try:
-            winfo.file_system.insert(folder,'end',text =name, iid = name,values=[size],open=False)
+            winfo.file_system.insert(folder,'end',text =name, iid = name,values=[size],open=False,tags='chose')
         except Exception:
             name_to_iid = name+f'{randint(0,10000)}'
-            winfo.file_system.insert(folder,'end',text =name, iid = name_to_iid,values=[size],open=False)
+            winfo.file_system.insert(folder,'end',text =name, iid = name_to_iid,values=[size],open=False,tags='chose')
             name = name_to_iid
         return name
     
