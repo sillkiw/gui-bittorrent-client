@@ -8,7 +8,9 @@ from hurry.filesize import alternative
 from enum import Enum
 from treelib import Node,Tree
 from copy import deepcopy
-import os
+from pathlib import Path
+from random import randint
+
 
 
 class winfoWindow(tk.Toplevel):
@@ -166,50 +168,85 @@ class winfoWindow(tk.Toplevel):
  
     def fill_with_torrent_metainfo(winfo):  
         '''Заполнение обзорщика файловой системы файлами, которые указаны в метаданных торрент-файла'''
-        
         #Чтение метафайла
         winfo.torrent.read_Metafile()
         
-        #Проверка файловой системы торрент-файла
-        if winfo.torrent.kind_file == Torrent._Kinds_of_file.SINGLE_FILE:
-            winfo.file_system.insert(parent="",index = "end",text= winfo.torrent.file_name,values = [winfo.torrent.size])  
-        elif winfo.torrent.kind_file == Torrent._Kinds_of_file.MULTIPLE_FILE:
-            winfo.magic()
+        #Инициализация файловой системы, указанной в метаданных торрент-файла
+        winfo.torrent.init_files()
+
+        #Отображение на экране
+        winfo.create_dict_from_paths()
+        winfo.show_in_file_system()
+
+        winfo.initialize_piece_manager()
+
+    def create_dict_from_paths(winfo):
+        def _recurse(dic, chain):
+            if len(chain) == 0:
+                return
+            if len(chain) == 1:
+                dic[chain[0]] = None
+                return
+            key, *new_chain = chain
+            if key not in dic:
+                dic[key] = {}
+            _recurse(dic[key], new_chain)
+            return
+        winfo.file_dict = {}
+        for file in winfo.torrent.file_names:
+            _recurse(winfo.file_dict, Path(file['path']).parts)
+
+    def insert_to_treeview(winfo,name):
+        winfo.file_system.insert('','end',text =name, iid = name,values=[winfo.torrent.size],open=True)
+    
+    def insert_to_root_folder(winfo,name,folder,size = 0):
+        try:
+            winfo.file_system.insert(folder,'end',text =name, iid = name,values=[size],open=False)
+        except Exception:
+            name_to_iid = name+f'{randint(0,10000)}'
+            winfo.file_system.insert(folder,'end',text =name, iid = name_to_iid,values=[size],open=False)
+            name = name_to_iid
+        return name
+    
+    def show_in_file_system(winfo):
+        def _recur(root_folder,root_folder_name):
+            for file_or_folder_name in root_folder:
+                inside = root_folder[file_or_folder_name]
+     
+                if isinstance(inside,dict):
+                    new_folder_name = file_or_folder_name
+                    new_folder_name = winfo.insert_to_root_folder(file_or_folder_name,root_folder_name)
+                    
+                    winfo.folder_sizes[new_folder_name] = 0
+                    
+                    _recur(inside,new_folder_name)
+                    
+                    winfo.folder_sizes[root_folder_name] += winfo.folder_sizes[new_folder_name]
+                else:
+                    new_file_name = file_or_folder_name
+                    file_size = winfo.torrent.file_his_size[new_file_name]
+                    
+                    winfo.insert_to_root_folder(new_file_name,root_folder_name,size = convert(file_size))
+                    
+                    winfo.folder_sizes[root_folder_name] += file_size
+         
+        root_folder_name = winfo.torrent.root_folder_name
+        file_system_in_root = winfo.file_dict[root_folder_name]
         
-    def magic(winfo):        
-        name_and_size = {}
-        all = deepcopy(winfo.torrent.files2)
-        file_table = create_file_system(winfo.torrent.file_name,winfo.torrent.length,all,name_and_size)
-        file_table = file_table.to_dict()
-        children = file_table[winfo.torrent.file_name]['children']
-        id = {"folder":1,"file":-1}
-        winfo.file_system.insert('','end',text = winfo.torrent.file_name,iid = id["folder"],values=[convert(name_and_size[winfo.torrent.file_name])],open=True)
-        id['folder']+=1
-        for file in children:
-            if isinstance(file,dict):
-                name = list(file.keys())[0]
-                children = file[name]['children']
-                winfo.file_system.insert('','end',text = name,iid = id["folder"],values=[convert(name_and_size[name])])
-                winfo.file_system.move(id["folder"],1,1000000)
-                id["folder"] += 1
-                winfo.cont(children,id,name_and_size)
-            else:
-                winfo.file_system.insert('','end',text = file,iid = id["file"],values=[convert(name_and_size[file])])
-                winfo.file_system.move(id["file"],1,1000000)
-                id["file"] -= 1      
-    def cont(winfo,children,id,name_and_size):
-        for child in children:
-            if isinstance(child,dict):
-                name = list(children_next.keys())[0]
-                children_next = child[name]['children']
-                winfo.file_system.insert('','end',iid  = id["folder"],text = name,values=[convert(name_and_size[name])])
-                winfo.file_system.move(id["folder"],id["folder"]-1,10000)
-                id["folder"] += 1
-                winfo.cont(children_next,id,name_and_size)
-            else:
-                    winfo.file_system.insert('','end',iid = id["file"],text = child,values=[convert(name_and_size[child])])
-                    winfo.file_system.move(id["file"],id["folder"]-1,1000000)
-                    id["file"] -= 1
+        winfo.insert_to_treeview(root_folder_name)
+        
+        winfo.folder_sizes = {}
+
+        winfo.folder_sizes[root_folder_name] = 0
+
+        _recur(file_system_in_root,root_folder_name)
+
+        winfo.put_sizes_to_folder_in_treeview()
+    
+    def put_sizes_to_folder_in_treeview(winfo):
+        for folder in winfo.folder_sizes:
+            winfo.file_system.item(folder,values=[convert(winfo.folder_sizes[folder])])
+
 
     def set_answer_or_close_frame(winfo):
         '''Установка двух кнопок Open | Close''' 
@@ -257,40 +294,3 @@ class winfoWindow(tk.Toplevel):
 def convert(siz):
     return size(siz,system=alternative)
 
-def create_file_system(dir_name,dir_size,files,name_and_size):
-    file_system = Tree()
-    root = file_system.create_node(dir_name,dir_name)
-    name_and_size[dir_name] = dir_size
-    for file in files:
-        path = file['path']
-        size = file['length']
-        len_of_path = len(path)
-        if len_of_path > 1:
-            name_of_folder = path.pop(0)
-            if name_of_folder in name_and_size.keys():
-                name_and_size[name_of_folder] += size
-                folder  = file_system.get_node(name_of_folder)
-            else:
-                name_and_size[name_of_folder] = size
-                folder = file_system.create_node(name_of_folder,name_of_folder,parent=root)
-            file_system = untill_file(path,size,folder,len_of_path-1,name_and_size,file_system)
-        else:
-            file_name = path[0]
-            file_system.create_node(file_name,parent=root,data=size)
-            name_and_size[file_name] = size
-    return file_system
-
-def untill_file(path,size,folder,len_of_path,name_and_size,file_system):
-    if len_of_path == 1:
-        name = path.pop(0)
-        name_and_size[name] = size
-        file_system.create_node(name,name,parent=folder)
-        return file_system
-    else:
-        name = path.pop(0)
-        if name in name_and_size.keys():
-            name_and_size[name] += size
-        else:
-            name_and_size[name] = size
-        nfolder = file_system.create_node(name,name,parent=folder)
-        untill_file(path,size,nfolder,len_of_path-1,name_and_size)
