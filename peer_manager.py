@@ -19,11 +19,36 @@ class PeerManager():
         except Exception as e:
             return False
 
+    def sent_all_peers_choke(pmg):
+        for peer in pmg.peers:
+            choke = messages.choke_msg_to_bytes()
+            peer.sent_message(choke)
+
+    def remove_all_peers(pmg):
+        for peer in pmg.peers:
+            pmg.remove_peer(peer)
+
+    def sent_all_peers_unchoke(pmg):
+        for peer in pmg.peers:
+            unchoke = messages.unchoke_msg_to_bytes()
+            peer.sent_message(unchoke)
+    
+    def sent_all_peers_interested(pmg):
+        for peer in pmg.peers:
+            interested = messages.interested_msg_to_bytes()
+            peer.sent_message(interested)
+    
+    def sent_all_peers_notinterested(pmg):
+        for peer in pmg.peers:
+            notinterested = messages.notInterested_msg_to_bytes()
+            peer.sent_message(notinterested)
+
+
     def handshake_with_peer(pmg,peer):
         if pmg.handshake(peer):
             pmg.peers.append(peer)
             
-            Thread(target=pmg.start_to_listen,args=(pmg.peers[-1],)).start()
+            Thread(target=pmg.start_to_listen,args=(pmg.peers[-1],),daemon=True).start()
         
         else: 
             print(f"Не получилось отправить сообщение Handshake к {peer.ip}")
