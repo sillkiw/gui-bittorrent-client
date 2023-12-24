@@ -173,7 +173,7 @@ class HeadWindow(tk.Tk): #главное окно
     def set_style(head):
         head.style = ttk.Style()
         
-        head.style.configure("mystyle.Treeview",font=('Helvetica',13),foreground='blue')
+        head.style.configure("mystyle.Treeview",font=('Helvetica',17),foreground='blue')
         head.style.configure("mystyle.Treeview.Heading", background="light ",font=('Helvetica', 11))
 
 
@@ -219,5 +219,5 @@ class HeadWindow(tk.Tk): #главное окно
         pass
 
 if __name__ == "__main__":
-    window = HeadWindow()
+    window = HeadWindow() 
     window.mainloop()
