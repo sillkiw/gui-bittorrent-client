@@ -67,9 +67,11 @@ class winfoWindow(tk.Toplevel):
 
     def set_style(winfo):
         '''Установка стиля'''
-        winfo.winfo_font = font.Font(family= "Helvetica", size=11) 
+        winfo.winfo_font = font.Font(family= "Helvetica", size=13) 
+        winfo.winfo_font2 = font.Font(family= "Helvetica", size=15) 
         winfo.style_button = ttk.Style()
         winfo.style_button.configure('Heading.TButton', anchor=tk.W,font = winfo.winfo_font)        
+        winfo.style_button.configure('Heading.Label', anchor=tk.W,font = winfo.winfo_font2)    
     
     def set_source_label_and_button(winfo):
         '''Установка  лейбла Source и кнопки для изменения торрент-файла'''
@@ -77,7 +79,7 @@ class winfoWindow(tk.Toplevel):
         winfo.source_frame = tk.Frame(winfo)
         winfo.source_frame.pack(fill=tk.X,pady=20)
 
-        tk.Label(winfo.source_frame,text="Source:",font=winfo.winfo_font).pack(side="left",anchor="w",padx = 18)
+        ttk.Label(winfo.source_frame,text="Source:",width=11,font=winfo.winfo_font,style='Heading.Label').pack(side="left",anchor="w")
        
         #Фото пиратского флага
         winfo.pirate_photo = tk.PhotoImage(file=r"images/icon.png")
@@ -85,7 +87,7 @@ class winfoWindow(tk.Toplevel):
         
         #Установка кнопки для изменения торрент-файла
         winfo.source_button = ttk.Button(winfo.source_frame,text = " "+winfo.torrent.name,width = winfo.winfo_width//13,image=winfo.pirate_photo,compound="left",style="Heading.TButton",command=winfo.change_torrent)
-        winfo.source_button.pack(anchor="sw",padx=26)
+        winfo.source_button.pack(anchor="sw")
     
     def set_destination_label_and_button(winfo):
         '''Установка лейбла Destination и кнопки для изменения места куда будет скачан файл'''
@@ -93,7 +95,7 @@ class winfoWindow(tk.Toplevel):
         winfo.destination_frame = tk.Frame(winfo)
         winfo.destination_frame.pack(fill=tk.X)
 
-        tk.Label(winfo.destination_frame,text="Destination:",font=winfo.winfo_font).pack(side="left",anchor="w",padx = 18)
+        ttk.Label(winfo.destination_frame,width=10,text="Destination:",font=winfo.winfo_font).pack(side="left",anchor="w")
 
         #Иконка файла
         winfo.file_photo = tk.PhotoImage(file=r"images/file_icon.png")
@@ -146,11 +148,16 @@ class winfoWindow(tk.Toplevel):
         winfo.vsb = ttk.Scrollbar(winfo.file_system_frame)
         winfo.vsb.pack(side = tk.RIGHT,fill=tk.Y)
 
-        winfo.tick_image = tk.PhotoImage(file=r"images/file_icon.png")
-        winfo.not_tick_image = tk.PhotoImage(file=r"images/file_icon.png") 
+        winfo.tick_image = tk.PhotoImage(file=r"images/tick.png")
+        winfo.not_tick_image = tk.PhotoImage(file=r"images/not_tick.png") 
 
         #Установка файловой системы
-        winfo.file_system = ttk.Treeview(winfo.file_system_frame,yscrollcommand=winfo.vsb.set)
+        winfo.file_system = ttk.Treeview(winfo.file_system_frame,yscrollcommand=winfo.vsb.set,style="mystyle.Treeview")
+
+        winfo.file_system.tag_configure('chose',image=winfo.tick_image)
+        winfo.file_system.tag_configure('unchose',image=winfo.not_tick_image)
+
+        winfo.bind("<Button-1>", winfo.box_click, True)
 
         winfo.set_columns_and_fill_headings()
         winfo.fill_with_torrent_metainfo()
@@ -158,6 +165,79 @@ class winfoWindow(tk.Toplevel):
         winfo.vsb.config(command=winfo.file_system.yview)
         winfo.file_system.pack() 
 
+    def box_click(winfo, event):
+        """ check or uncheck box when clicked """
+        try:
+            x, y, widget = event.x, event.y, event.widget
+            elem = widget.identify("element", x, y)
+            
+            if "image" in elem:
+                # a box was clicked
+                item = winfo.file_system.identify_row(y)
+                tags = winfo.file_system.item(item, "tags")
+                if ("unchose" in tags):
+                    winfo.check_ancestor(item)
+                    winfo.check_descendant(item)
+                else:
+                    winfo.uncheck_descendant(item)
+                    winfo.uncheck_ancestor(item)
+        except Exception:
+            pass
+
+    def check_descendant(winfo, item):
+        """ check the boxes of item's descendants """
+        children = winfo.file_system.get_children(item)
+        for iid in children:
+            winfo.file_system.item(iid, tags=("chose",))
+            winfo.check_descendant(iid)
+
+    def check_ancestor(winfo, item):
+        """ check the box of item and change the state of the boxes of item's
+            ancestors accordingly """
+        winfo.file_system.item(item, tags=("chose",))
+        parent = winfo.file_system.parent(item)
+        if parent:        
+            winfo.check_parent(parent)
+            winfo.check_ancestor(parent)
+
+    def uncheck_descendant(winfo, item):
+        """ uncheck the boxes of item's descendant """
+        children = winfo.file_system.get_children(item)
+        for iid in children:
+            winfo.file_system.item(iid, tags=("unchose",))
+            winfo.uncheck_descendant(iid)
+    
+    def check_parent(winfo, item):
+        """ put the box of item in tristate and change the state of the boxes of
+            item's ancestors accordingly """
+        winfo.file_system.item(item, tags=("chose",))
+        parent = winfo.file_system.parent(item)
+        if parent:
+            winfo.check_parent(parent)
+    
+    def uncheck_parent(winfo, item):
+        winfo.file_system.item(item, tags=("unchose",))
+        print(parent)
+        parent = winfo.file_system.parent(item)
+        if parent:
+            children = winfo.file_system.get_children(parent)
+            b = ["unchose" in winfo.file_system.item(c, "tags") for c in children]
+            if all(b):
+                winfo.uncheck_parent(parent)
+
+    def uncheck_ancestor(winfo, item):
+        """ uncheck the box of item and change the state of the boxes of item's
+            ancestors accordingly """
+        winfo.file_system.item(item, tags=("unchose",))
+        parent = winfo.file_system.parent(item)
+        if parent:
+            children = winfo.file_system.get_children(parent)
+            b = ["unchose" in winfo.file_system.item(c, "tags") for c in children]
+            if all(b):
+                winfo.uncheck_parent(parent)
+            # else:
+            #     # no box is chose
+            #     winfo.uncheck_ancestor(parent)
 
     #Установка столбцов и строк для файловой системы
     def set_columns_and_fill_headings(winfo):
@@ -165,7 +245,7 @@ class winfoWindow(tk.Toplevel):
         winfo.file_system['columns'] = ('Size')
 
         winfo.file_system.column("#0",anchor='w',width=winfo.winfo_width//2+winfo.winfo_width//5)
-        winfo.file_system.column('Size',anchor='center',width=winfo.winfo_width//4)
+        winfo.file_system.column('Size',anchor='center',width=winfo.winfo_width//6)
 
         winfo.file_system.heading("#0",text="Name",anchor="w")
         winfo.file_system.heading('Size',text = 'Size',anchor = "w")
@@ -201,7 +281,7 @@ class winfoWindow(tk.Toplevel):
             _recurse(winfo.file_dict, Path(file['path']).parts)
 
     def insert_to_treeview(winfo,name):
-        winfo.file_system.insert('','end',text =name, iid = name,values=[winfo.torrent.size],open=True)
+        winfo.file_system.insert('','end',text =name, iid = name,values=[winfo.torrent.size],open=True,tags='chose')
     
     def insert_to_root_folder(winfo,name,folder,size = 0):
         try:
