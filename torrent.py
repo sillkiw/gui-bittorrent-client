@@ -18,6 +18,7 @@ class Torrent:
         tr.destination = tr.source #Первоначально файл будет установлен там, где пользователь его выбрал
         #Словарь с файлами 
         tr.file_names = []
+        tr.file_his_size = {}
        
         
     #Чтение метаданных с метафайла
@@ -41,21 +42,23 @@ class Torrent:
             #Если определено несколько файлов в info
             if 'files' in tr.metainfo['info']:
                 #Имя главной папки
-                tr.file_name = tr.info['name']
-                tr.files = tr.info['files']
-                tr.files2 = tr.info['files']
+                tr.root_folder_name = tr.info['name']
+                tr.metainfo_files = tr.info['files']
                 
                 #Тип файловой системы
                 tr.kind_file = Torrent._Kinds_of_file.MULTIPLE_FILE
                 
                 #Общий размер
                 tr.length = 0
-                for file in tr.files:
+                for file in tr.metainfo_files:
                     tr.length += file['length']
             else:
                 #Имя единственного файла
                 tr.file_name = tr.info['name']
-                tr.files = None
+
+                tr.root_folder_name,_ = os.path.splitext(tr.file_name)
+
+                tr.metainfo_files = None
                 
                 #Тип файловой системы
                 tr.kind_file = Torrent._Kinds_of_file.SINGLE_FILE
@@ -77,19 +80,22 @@ class Torrent:
         else:
             return [[tr.metainfo['announce']]]
 
-    #Создание файловой системы торрента
+ 
     def init_files(tr):
+        def convert(siz):
+            return size(siz,system=alternative)
+        '''Создание файловой системы торрента'''
         #Создаем главную папку 
-        tr.root = tr.destination+"/"+tr.file_name
+        tr.root = tr.root_folder_name
         #Проверка типа файловой системы  торрента
         if tr.kind_file == tr._Kinds_of_file.MULTIPLE_FILE:
             #Если такой папки не существует
             #if not os.path.exists(root):
                 #Создаем такую папку
              #   os.mkdir(root, 0o0766 )
-
+            
             #Для каждого файла в info['files']
-            for file in tr.files:
+            for file in tr.metainfo_files:
                 #Присоединение имени файла к root
                 path_file = os.path.join(tr.root, *file["path"])
 
@@ -99,10 +105,13 @@ class Torrent:
 
                 #Сохраняем имя файла и его размер
                 tr.file_names.append({"path": path_file , "length": file["length"]})
+                file_name = os.path.basename(path_file)
+                tr.file_his_size[file_name] = file['length']
         else:
             #Если файл всего лишь, то сохраняем имя файла и его размер
-            tr.file_names.append({"path": tr.root , "length": tr.length})
-    
+            tr.file_path = os.path.join(tr.root, tr.file_name)
+            tr.file_names.append({"path": tr.file_path , "length": tr.length})
+            tr.file_his_size[tr.file_name] = tr.length
 
     def split_torrent_path(tr):
         parts  = tr.torrent_path.split("/")
