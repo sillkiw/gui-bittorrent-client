@@ -52,7 +52,7 @@ class HeadWindow(tk.Tk): #главное окно
         elif chest:
             head.chest_button.configure(image=head.chest_button_photo)
             
-
+    
     def set_tool_bar(head):
         '''Установка панели инструментов Open|Edit|View'''
 
@@ -65,13 +65,34 @@ class HeadWindow(tk.Tk): #главное окно
         file_menu.add_separator()
         file_menu.add_command(label="Exit",command=sys.exit)
         
+        edit_menu = tk.Menu(tearoff=0)
+        edit_menu.add_command(label="Start all",command=head.start_all)
+        edit_menu.add_command(label="Stop all",command=head.stop_all)
+        edit_menu.add_separator()
+        edit_menu.add_command(label="Delete all",command=head.delete_all)
+
         #Инициализация(File|Edit|View) 
         main_menu.add_cascade(label="File",menu = file_menu)
-        main_menu.add_cascade(label="Edit")
+        main_menu.add_cascade(label="Edit",menu = edit_menu)
         main_menu.add_cascade(label="View")
         
         #Бинд на главное окно
         head.config(menu=main_menu)
+
+    def start_all(head):
+        for id in head.installation_form_list:
+            head.installation_form_list[id].status.value = InstallationForm.RUN
+   
+    def delete_all(head):
+        for install in head.viewer.get_children():
+            head.viewer.delete(install)
+        for id in head.installation_form_list:
+            head.installation_form_list[id].status.value = InstallationForm.DELETE
+    
+    def stop_all(head):
+        for id in head.installation_form_list:
+            head.installation_form_list[id].status.value = InstallationForm.STOP
+
 
     def set_button_panel(head):
         head.buttons_frame = tk.Frame(head,background='white')
