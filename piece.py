@@ -17,7 +17,7 @@ class Piece:
     def update_block_status(pie):  
         for i, block in enumerate(pie.blocks):
             if block.state == State.PEDNING and (time.time() - block.last_seen) > 5:
-                pie.blocks[i].state = State.FREE
+                pie.blocks[i] = Block()
 
     def init_blocks(pie):
         pie.blocks = []
