@@ -297,6 +297,10 @@ NOTINTERESTED_PAYLOAD_LENGTH = 1
 NOTINTERESTED_TOTAL_LENGTH = LEN + NOTINTERESTED_PAYLOAD_LENGTH
 NOTINTERESTED_MESSAGE_ID = 3
 
+
+def notInterested_msg_to_bytes():
+    return pack(">IB",NOTINTERESTED_PAYLOAD_LENGTH,NOTINTERESTED_MESSAGE_ID)
+
 def notInterested_msg_from_bytes(payload):
     return name_msg_from_bytes_maker(payload,
                   NOTINTERESTED_TOTAL_LENGTH,
