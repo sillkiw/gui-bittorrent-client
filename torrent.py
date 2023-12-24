@@ -84,9 +84,9 @@ class Torrent:
         #Проверка типа файловой системы  торрента
         if tr.kind_file == tr._Kinds_of_file.MULTIPLE_FILE:
             #Если такой папки не существует
-            if not os.path.exists(root):
+            #if not os.path.exists(root):
                 #Создаем такую папку
-                os.mkdir(root, 0o0766 )
+             #   os.mkdir(root, 0o0766 )
 
             #Для каждого файла в info['files']
             for file in tr.files:
@@ -94,8 +94,8 @@ class Torrent:
                 path_file = os.path.join(root, *file["path"])
 
                 #Создание такой папки
-                if not os.path.exists(os.path.dirname(path_file)):
-                    os.makedirs(os.path.dirname(path_file))
+                #if not os.path.exists(os.path.dirname(path_file)):
+                #    os.makedirs(os.path.dirname(path_file))
 
                 #Сохраняем имя файла и его размер
                 tr.file_names.append({"path": path_file , "length": file["length"]})
