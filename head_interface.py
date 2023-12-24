@@ -26,6 +26,8 @@ class HeadWindow(tk.Tk): #главное окно
         #Список торрентов
         head.torrent_list = []
 
+        head.set_style()
+
         #Установка панели инструментов
         head.set_tool_bar()
 
@@ -97,29 +99,30 @@ class HeadWindow(tk.Tk): #главное окно
         head.delete_button = tk.Button(head.buttons_frame,highlightcolor='white',text='Delete',foreground="white",width = 80,activebackground="white",height=60,border=0,background='white',default='active',image=head.delete_button_photo,command=head.delete_torrent)
         head.delete_button.pack(side=tk.LEFT)
         
-        ttk.Separator(head.buttons_frame, orient='vertical').pack(fill=tk.Y)
+
         
     
         head.chest_button_photo = tk.PhotoImage(file=r"images/chest.png")
         head.open_chest_button_photo = tk.PhotoImage(file=r"images/chest_open.png")
-        head.chest_button_photo = head.chest_button_photo.subsample(8,8)
-        head.open_chest_button_photo = head.open_chest_button_photo.subsample(3,5)
+        head.chest_button_photo = head.chest_button_photo.subsample(9,9)
+        head.open_chest_button_photo = head.open_chest_button_photo.subsample(10,10)
         head.chest = False
 
-        head.chest_button = tk.Button(head.buttons_frame,highlightcolor='white',text='Delete',foreground="white",activebackground="white",height=55,width=140,border=0,background='white',default='active',image=head.chest_button_photo,command=lambda : head.ask_torrent_file(chest = True))
-        head.chest_button.pack(side=tk.LEFT)
+        head.chest_button = tk.Button(head.buttons_frame,highlightcolor='white',text='Delete',foreground="white",activebackground="white",height=55,width=100,border=0,background='white',default='active',image=head.chest_button_photo,command=lambda : head.ask_torrent_file(chest = True))
+        head.chest_button.pack(side=tk.LEFT,padx=40)
 
         
+        head.info_photo = tk.PhotoImage(file=r"images/info.png")
+        head.info_photo = head.info_photo.subsample(9,9)
+
+        head.info_button = tk.Button(head.buttons_frame,highlightcolor='white',text='Delete',foreground="white",activebackground="white",height=55,width=60,border=0,background='white',default='active',image=head.info_photo,command=lambda : head.ask_torrent_file(chest = True))
+        head.info_button.pack(side=tk.LEFT)
+
         head.buttons_frame.pack(fill=tk.X)
 
     def set_viewer(head):
         '''Установка обзорщика установок'''
         head.frame_viewer = tk.Frame(head)
-
-        head.style = ttk.Style()
-        
-        head.style.configure("mystyle.Treeview",font=('Helvetica',13),foreground='blue')
-        head.style.configure("mystyle.Treeview.Heading", background="light ",font=('Helvetica', 11))
 
         head.viewer = ttk.Treeview(head.frame_viewer,show="headings",style="mystyle.Treeview")
         head.viewer.tag_configure('tor', background='#E8E8E8')
@@ -145,6 +148,13 @@ class HeadWindow(tk.Tk): #главное окно
             head.viewer.column(title,anchor = "w",width=sizes[index])
             #Инициализация заголовка
             head.viewer.heading(title,text = title,anchor = "w")   
+
+    def set_style(head):
+        head.style = ttk.Style()
+        
+        head.style.configure("mystyle.Treeview",font=('Helvetica',13),foreground='blue')
+        head.style.configure("mystyle.Treeview.Heading", background="light ",font=('Helvetica', 11))
+
 
    
     def open_torrent_information_window(head):
