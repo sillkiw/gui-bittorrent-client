@@ -158,7 +158,7 @@ class winfoWindow(tk.Toplevel):
         '''Установка столбцов и заполнение заголовков'''
         winfo.file_system['columns'] = ('Size')
 
-        winfo.file_system.column("#0",anchor='w',width=winfo.winfo_width//2+winfo.winfo_width//6)
+        winfo.file_system.column("#0",anchor='w',width=winfo.winfo_width//2+winfo.winfo_width//5)
         winfo.file_system.column('Size',anchor='center',width=winfo.winfo_width//4)
 
         winfo.file_system.heading("#0",text="Name",anchor="w")
@@ -173,9 +173,8 @@ class winfoWindow(tk.Toplevel):
         #Проверка файловой системы торрент-файла
         if winfo.torrent.kind_file == Torrent._Kinds_of_file.SINGLE_FILE:
             winfo.file_system.insert(parent="",index = "end",text= winfo.torrent.file_name,values = [winfo.torrent.size])  
-        
         elif winfo.torrent.kind_file == Torrent._Kinds_of_file.MULTIPLE_FILE:
-           winfo.magic()
+            winfo.magic()
         
     def magic(winfo):        
         name_and_size = {}
