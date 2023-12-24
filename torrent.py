@@ -80,7 +80,7 @@ class Torrent:
     #Создание файловой системы торрента
     def init_files(tr):
         #Создаем главную папку 
-        root = tr.destination+"/"+tr.file_name
+        tr.root = tr.destination+"/"+tr.file_name
         #Проверка типа файловой системы  торрента
         if tr.kind_file == tr._Kinds_of_file.MULTIPLE_FILE:
             #Если такой папки не существует
@@ -91,7 +91,7 @@ class Torrent:
             #Для каждого файла в info['files']
             for file in tr.files:
                 #Присоединение имени файла к root
-                path_file = os.path.join(root, *file["path"])
+                path_file = os.path.join(tr.root, *file["path"])
 
                 #Создание такой папки
                 #if not os.path.exists(os.path.dirname(path_file)):
@@ -101,7 +101,7 @@ class Torrent:
                 tr.file_names.append({"path": path_file , "length": file["length"]})
         else:
             #Если файл всего лишь, то сохраняем имя файла и его размер
-            tr.file_names.append({"path": root , "length": tr.length})
+            tr.file_names.append({"path": tr.root , "length": tr.length})
     
 
     def split_torrent_path(tr):
