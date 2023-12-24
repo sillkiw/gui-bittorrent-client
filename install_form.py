@@ -1,21 +1,25 @@
 from installation_manager import Installation_MNG
-from multiprocessing import Pipe
+from multiprocessing import Pipe,Value
 import threading,os
-
+from enum import Enum
 #Установочная форма
 class InstallationForm:
+   
+    RUN,STOP,DELETE,FINISHED = range(0,4)
+
     def __init__(install_form,head,torrent,id):
         install_form.head = head
         install_form.name,_ = os.path.splitext(torrent.name)
         install_form.size = torrent.size
         install_form.id = id
+        install_form.status = Value('i',InstallationForm.RUN)
         #Труба для обмена сообщениями между установочным процессорои и графическим интерфейсом
         install_form.to_head,install_form.from_install = Pipe()
         #Установочный процесс
-        install_form.installation_mng = Installation_MNG(torrent,install_form.to_head)
+        install_form.installation_mng = Installation_MNG(torrent,install_form.to_head,install_form.status)
         #Поток для изменения информации на экране
         install_form.updater_thread = threading.Thread(target=install_form.updater,daemon=True)
-
+    
     #Размещение установочной формы на экран
     def pack_to_viewer(install_form):
         install_form.head.viewer.insert(parent="",index = "end",iid = install_form.id,
@@ -23,11 +27,14 @@ class InstallationForm:
         
     #Обновление установочной формы
     def updater(install_form):
-        while True:
-            #Получение информации от установки
-            progress,status,peers,speed = install_form.from_install.recv()
-            #Изменение информации об установки
-            install_form.head.viewer.item(install_form.id,values=(install_form.name,install_form.size,progress,status,peers,speed))
+        while install_form.status.value != InstallationForm.FINISHED and install_form.status.value != InstallationForm.DELETE:
+            try:
+                #Получение информации от установки
+                progress,status,peers,speed = install_form.from_install.recv()
+                #Изменение информации об установки
+                install_form.head.viewer.item(install_form.id,values=(install_form.name,install_form.size,progress,status,peers,speed))
+            except Exception:
+                continue
 
     def begin(install_form):
         #Запустить поток обновляющий информацию на GUI
