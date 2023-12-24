@@ -76,20 +76,31 @@ class HeadWindow(tk.Tk): #главное окно
         tk.Label(head.buttons_frame,image=head.logo_photo,border=7,background="black").pack(side = tk.LEFT)
 
      
-        head.chest_button_photo = tk.PhotoImage(file=r"images/chest.png")
-        head.open_chest_button_photo = tk.PhotoImage(file=r"images/chest_open.png")
-        head.chest_button_photo = head.chest_button_photo.subsample(3,5)
-        head.open_chest_button_photo = head.open_chest_button_photo.subsample(3,5)
-        head.chest = False
+        # head.chest_button_photo = tk.PhotoImage(file=r"images/chest.png")
+        # head.open_chest_button_photo = tk.PhotoImage(file=r"images/chest_open.png")
+        # head.chest_button_photo = head.chest_button_photo.subsample(3,5)
+        # head.open_chest_button_photo = head.open_chest_button_photo.subsample(3,5)
+        # head.chest = False
 
-        head.chest_button = tk.Button(head.buttons_frame,highlightcolor='white',text='Delete',foreground="white",activebackground="white",height=55,width=140,border=0,background='white',default='active',image=head.chest_button_photo,command=lambda : head.ask_torrent_file(chest = True))
-        head.chest_button.pack(side=tk.LEFT)
+        # head.chest_button = tk.Button(head.buttons_frame,highlightcolor='white',text='Delete',foreground="white",activebackground="white",height=55,width=140,border=0,background='white',default='active',image=head.chest_button_photo,command=lambda : head.ask_torrent_file(chest = True))
+        # head.chest_button.pack(side=tk.LEFT)
 
+        head.start_button_photo = tk.PhotoImage(file=r"images/play_button.png")
+        head.start_button_photo = head.start_button_photo.subsample(7,7)
+        
+        head.start_button = tk.Button(head.buttons_frame,highlightcolor='white',text='Delete',foreground="white",activebackground="white",height=60,border=0,background='white',default='active',image=head.start_button_photo,command=head.delete_torrent)
+        head.start_button.pack(side=tk.LEFT)
+
+        head.stop_button_photo = tk.PhotoImage(file=r"images/stop_button.png")
+        head.stop_button_photo = head.stop_button_photo.subsample(18,18)
+        
+        head.stop_button = tk.Button(head.buttons_frame,highlightcolor='white',text='Delete',foreground="white",activebackground="white",height=60,border=0,background='white',default='active',image=head.stop_button_photo,command=head.delete_torrent)
+        head.stop_button.pack(side = tk.LEFT)
 
         head.delete_button_photo = tk.PhotoImage(file=r"images/delete_button.png")
-        head.delete_button_photo = head.delete_button_photo.subsample(2,2)
+        head.delete_button_photo = head.delete_button_photo.subsample(5,5)
         
-        head.delete_button = tk.Button(head.buttons_frame,highlightcolor='white',text='Delete',foreground="white",activebackground="white",height=55,border=0,background='white',default='active',image=head.delete_button_photo,command=head.delete_torrent)
+        head.delete_button = tk.Button(head.buttons_frame,highlightcolor='white',text='Delete',foreground="white",activebackground="white",height=60,border=0,background='white',default='active',image=head.delete_button_photo,command=head.delete_torrent)
         head.delete_button.pack(side=tk.LEFT)
         
         
