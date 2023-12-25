@@ -6,8 +6,6 @@ from torrent import Torrent
 from hurry.filesize import size
 from hurry.filesize import alternative
 from enum import Enum
-from treelib import Node,Tree
-from copy import deepcopy
 from pathlib import Path
 from random import randint
 
@@ -389,12 +387,15 @@ class winfoWindow(tk.Toplevel):
                     add_chose_file(children,root_folder_name)
                 else:
                     path = root_folder_name+'\\'+file_or_folder
-                    for file in winfo.torrent.file_names:
-                        if path == file['path']:
-                            file['chose'] = True
-                    print(winfo.torrent.file_names)
+                    if 'chose' in winfo.file_system.item(file_or_folder, "tags"):
+                        for file in winfo.torrent.file_names:
+                            if path == file['path']:
+                                winfo.size += file['length']
+                                file['chose'] = True
+                    
                 
         winfo.cnt_chosen_file = 0
+        winfo.size = 0
         root_folder_system = winfo.file_system.get_children(winfo.torrent.root_folder_name)
         if 'chose' in winfo.file_system.item(winfo.torrent.root_folder_name, "tags"):
             winfo.cnt_chosen_file += 1
