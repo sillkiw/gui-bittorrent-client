@@ -26,7 +26,7 @@ class Installation_MNG(multiprocessing.Process):
         imng.status = status
         imng.was_paused = False
 
-    #Переопределение метода run в Process
+    # Переопределение метода run в Process
     def run(imng):
         imng.initialize_tracker_and_managers()
         imng.display_progress(status='Initializing...')
@@ -45,7 +45,7 @@ class Installation_MNG(multiprocessing.Process):
                     imng.peer_mng.sent_all_peers_notinterested()
                     imng.display_progress(status='Stopped')
                     imng.was_paused = True
-            elif imng.status.value ==  Installation_MNG.DELETE:
+            else:  # imng.status.value ==  Installation_MNG.DELETE:
                 imng.delete_files()
                 break
          
@@ -74,6 +74,9 @@ class Installation_MNG(multiprocessing.Process):
             
             for piece in imng.piece_mng.pieces:
                 index = piece.piece_index
+                
+                if not(imng.piece_mng.pieces[index].to_download):
+                    continue
 
                 if imng.piece_mng.pieces[index].is_full:
                     continue
@@ -93,7 +96,7 @@ class Installation_MNG(multiprocessing.Process):
                 if peer.sent_message(request_msg):
                     peer.requets_message_sent += 1
 
-            #imng.peer_mng.check_peers()
+
             time.sleep(0.2)
             imng.time2 = time.time()
             imng.display_progress()
@@ -137,7 +140,7 @@ class Installation_MNG(multiprocessing.Process):
 
 
     def initialize_tracker_and_managers(imng):
-        imng.torrent.init_files()
+        imng.torrent.create_file_system_on_disk()
         imng.tracker = Tracker(imng.torrent,imng.status)
         imng.piece_mng = PieceManager(imng.torrent)
         imng.peer_mng = PeerManager(imng.tracker,imng.piece_mng)
