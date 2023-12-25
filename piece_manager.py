@@ -11,6 +11,8 @@ class PieceManager:
         piemng._load_files()
         for file in piemng.files:
             id_piece = file['idPiece']
+            if file['download']:
+                piemng.pieces[id_piece].to_download = False
             piemng.pieces[id_piece].related_files.append(file)
     
     def initialize_pieces(piemng):
@@ -52,7 +54,7 @@ class PieceManager:
 
     def all_pieces_full(piemng):
         for piece in piemng.pieces:
-            if not piece.is_full:
+            if not piece.is_full and piece.to_download:
                 return False
         return True
 
@@ -68,13 +70,14 @@ class PieceManager:
             while current_size_file > 0:
                 id_piece = int(piece_offset / piemng.torrent.piece_length)
                 piece_size = piemng.pieces[id_piece].piece_size - piece_size_used
-
+                print(f)
                 if current_size_file - piece_size < 0:
                     file = {"length": current_size_file,
                             "idPiece": id_piece,
                             "fileOffset": file_offset,
                             "pieceOffset": piece_size_used,
-                            "path": f["path"]
+                            "path": f["path"],
+                            "download" : f['chose']
                             }
                     piece_offset += current_size_file
                     file_offset += current_size_file
@@ -87,7 +90,8 @@ class PieceManager:
                             "idPiece": id_piece,
                             "fileOffset": file_offset,
                             "pieceOffset": piece_size_used,
-                            "path": f["path"]
+                            "path": f["path"],
+                            "download" : f['chose']
                             }
                     piece_offset += piece_size
                     file_offset += piece_size
