@@ -4,14 +4,13 @@ from tracker import Tracker
 from piece_manager import PieceManager
 from block import State
 from hurry.filesize import size,alternative
-from enum import Enum
 import multiprocessing,time,messages,os
 
 class Installation_MNG(multiprocessing.Process):
 
     RUN,STOP,DELETE,FINISHED = range(0,4)
 
-    def __init__(imng,torrent,to_head,status):
+    def __init__(imng,torrent,to_head,status,size):
         multiprocessing.Process.__init__(imng)
         #Инициализация трекера
         imng.torrent = torrent
@@ -22,7 +21,7 @@ class Installation_MNG(multiprocessing.Process):
         imng.progress_in_per = 0
         imng.sum_installation = 0
         imng.sum_time = 0
-
+        imng.size = size
         imng.status = status
         imng.was_paused = False
 
@@ -134,7 +133,9 @@ class Installation_MNG(multiprocessing.Process):
             peer_show = f'{number_of_active_peers}({number_of_inactive_peers})'
 
         imng.progress = update_progression
-        imng.progress_in_per = round(float((float(imng.progress)/imng.torrent.length) * 100),2)
+        imng.progress_in_per = round(float((float(imng.progress)/imng.size) * 100),2)
+        if imng.progress_in_per > 100:
+            imng.progress_in_per = 100
         progress_show = f'{imng.progress_in_per}%'
         imng.to_head.send((progress_show,status,peer_show,imng.speed))
 
