@@ -2,11 +2,9 @@ import hashlib as hash
 import bencode as ben
 import requests as req
 from random import randint
-from tkinter import messagebox
 from urllib.parse import urlparse
 from peer import Peer
 import struct,socket,time,messages
-from peer_manager import PeerManager
 from threading import Thread
 
 
@@ -40,6 +38,9 @@ class Tracker(Thread):
         def connect_with_trackers(track):  
             for tracker in track.announce_list:
                 url = tracker[0]
+                if track.status.value == 1:
+                    while track.status.value != 0:
+                        pass
                 if str.startswith(url,"http"):
                     try:
                         track.http_handle(url)
@@ -77,7 +78,7 @@ class Tracker(Thread):
             try:
                 url_socket = socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
                 url_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-                url_socket.settimeout(3)
+                url_socket.settimeout(2)
 
                 ip,port = socket.gethostbyname(parsed.hostname),parsed.port
 
