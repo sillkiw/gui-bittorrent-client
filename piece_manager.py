@@ -35,7 +35,7 @@ class PieceManager:
         piece_index = piece_message['piece_index']
         block_offset = piece_message['begin']
         block_data = piece_message['block']
-        print(piece_index)
+ 
         if piemng.pieces[piece_index].is_full:
             return
         try:
