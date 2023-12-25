@@ -84,35 +84,39 @@ class Torrent:
     def init_files(tr):
         def convert(siz):
             return size(siz,system=alternative)
+        
         '''Создание файловой системы торрента'''
         #Создаем главную папку 
         tr.root = tr.root_folder_name
         #Проверка типа файловой системы  торрента
         if tr.kind_file == tr._Kinds_of_file.MULTIPLE_FILE:
-            #Если такой папки не существует
-            #if not os.path.exists(root):
-                #Создаем такую папку
-             #   os.mkdir(root, 0o0766 )
-            
+          
             #Для каждого файла в info['files']
             for file in tr.metainfo_files:
                 #Присоединение имени файла к root
                 path_file = os.path.join(tr.root, *file["path"])
 
-                #Создание такой папки
-                #if not os.path.exists(os.path.dirname(path_file)):
-                #    os.makedirs(os.path.dirname(path_file))
-
                 #Сохраняем имя файла и его размер
-                tr.file_names.append({"path": path_file , "length": file["length"]})
+                tr.file_names.append({"path": path_file , "length": file["length"],'chose':False})
                 file_name = os.path.basename(path_file)
                 tr.file_his_size[file_name] = file['length']
         else:
             #Если файл всего лишь, то сохраняем имя файла и его размер
             tr.file_path = os.path.join(tr.root, tr.file_name)
-            tr.file_names.append({"path": tr.file_path , "length": tr.length})
+            tr.file_names.append({"path": tr.file_path , "length": tr.length,'chose':False})
             tr.file_his_size[tr.file_name] = tr.length
+    
+    def create_file_system_on_disk(tr):
+        tr.root_folder = tr.destination + '/' + tr.root_folder_name
+        
+        if not os.path.exists(tr.root_folder):
+            os.mkdir(tr.root_folder, 0o0766 )
 
+        for file in tr.file_names:
+            path = file['path']
+            if not os.path.exists(os.path.dirname(path)):
+                os.makedirs(os.path.dirname(path))
+            
     def split_torrent_path(tr):
         parts  = tr.torrent_path.split("/")
         last_part = parts.pop(-1)
