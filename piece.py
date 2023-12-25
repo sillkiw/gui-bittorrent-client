@@ -57,17 +57,18 @@ class Piece:
             file_offset = file['fileOffset']
             piece_offset = file['pieceOffset']
             legnth = file['length']
-
-            try:
-                f = open(path_file,'r+b')
-            except IOError:
-                f = open(path_file,'wb')
-            except Exception:
-                print("Не получается записать файл")
-                return
-            f.seek(file_offset)
-            f.write(pie.data[piece_offset:piece_offset+legnth])
-            f.close()
+            write_access = file['download']
+            if write_access:
+                try:
+                    f = open(path_file,'r+b')
+                except IOError:
+                    f = open(path_file,'wb')
+                except Exception:
+                    print("Не получается записать файл")
+                    return
+                f.seek(file_offset)
+                f.write(pie.data[piece_offset:piece_offset+legnth])
+                f.close()
 
     def merge_blocks(pie):
         buf = b''
