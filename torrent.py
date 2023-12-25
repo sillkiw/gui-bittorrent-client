@@ -107,13 +107,14 @@ class Torrent:
             tr.file_his_size[tr.file_name] = tr.length
     
     def create_file_system_on_disk(tr):
-        tr.root_folder = tr.destination + '/' + tr.root_folder_name
+        tr.root_folder = tr.destination + '\\' 
         
         if not os.path.exists(tr.root_folder):
             os.mkdir(tr.root_folder, 0o0766 )
 
         for file in tr.file_names:
-            path = file['path']
+            path =  tr.root_folder+file['path']
+            file['path'] = path
             if not os.path.exists(os.path.dirname(path)):
                 os.makedirs(os.path.dirname(path))
             
