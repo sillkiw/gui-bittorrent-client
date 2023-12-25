@@ -165,7 +165,7 @@ class HeadWindow(tk.Tk): #главное окно
         head.viewer.heading("#0")
 
         for index,title in enumerate(titles):
-            #Инициализация столбца
+            #Инициализация столбц
             head.viewer.column(title,anchor = "w",width=sizes[index])
             #Инициализация заголовка
             head.viewer.heading(title,text = title,anchor = "w")   
@@ -173,7 +173,7 @@ class HeadWindow(tk.Tk): #главное окно
     def set_style(head):
         head.style = ttk.Style()
         
-        head.style.configure("mystyle.Treeview",font=('Helvetica',17),foreground='blue')
+        head.style.configure("mystyle.Treeview",font=('Helvetica',13),foreground='blue')
         head.style.configure("mystyle.Treeview.Heading", background="light ",font=('Helvetica', 11))
 
 
