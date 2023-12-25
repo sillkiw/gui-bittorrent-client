@@ -10,6 +10,7 @@ class Piece:
         pie.piece_size = piece_size
         pie.piece_hash = piece_hash
         pie.related_files = []
+        pie.to_download = False
         pie.is_full = False
         pie.number_of_blocks = int(math.ceil(float(piece_size)/BLOCK_SIZE))
         pie.init_blocks()
