@@ -1,6 +1,7 @@
 import tkinter as tk
 from tkinter import filedialog as fd
 from tkinter import ttk
+from tkinter import messagebox
 from showinfo import winfoWindow
 from install_form import InstallationForm
 import sys
@@ -61,21 +62,20 @@ class HeadWindow(tk.Tk): #главное окно
        
         #При нажатии на File
         file_menu = tk.Menu(tearoff=0)
-        file_menu.add_command(label="Open...",command=head.ask_torrent_file) 
+        file_menu.add_command(label="Открыть...",command=head.ask_torrent_file) 
         file_menu.add_separator()
-        file_menu.add_command(label="Exit",command=sys.exit)
+        file_menu.add_command(label="Выйти",command=sys.exit)
         
         edit_menu = tk.Menu(tearoff=0)
-        edit_menu.add_command(label="Start all",command=head.start_all)
-        edit_menu.add_command(label="Stop all",command=head.stop_all)
+        edit_menu.add_command(label="Начать все загрузки",command=head.start_all)
+        edit_menu.add_command(label="Остановить все загрузки",command=head.stop_all)
         edit_menu.add_separator()
-        edit_menu.add_command(label="Delete all",command=head.delete_all)
+        edit_menu.add_command(label="Удалить все загрузки",command=head.delete_all)
 
         #Инициализация(File|Edit|View) 
-        main_menu.add_cascade(label="File",menu = file_menu)
-        main_menu.add_cascade(label="Edit",menu = edit_menu)
-        main_menu.add_cascade(label="View")
-        
+        main_menu.add_cascade(label="Файл",menu = file_menu)
+        main_menu.add_cascade(label="Правка",menu = edit_menu)
+     
         #Бинд на главное окно
         head.config(menu=main_menu)
 
@@ -105,13 +105,13 @@ class HeadWindow(tk.Tk): #главное окно
         head.start_button_photo = tk.PhotoImage(file=r"images/play_button.png")
         head.start_button_photo = head.start_button_photo.subsample(7,8)
         
-        head.start_button = tk.Button(head.buttons_frame,highlightcolor='white',text='Delete',foreground="white",width = 80,activebackground="white",height=60,border=0,background='white',default='active',image=head.start_button_photo,command=head.delete_torrent)
+        head.start_button = tk.Button(head.buttons_frame,highlightcolor='white',text='Delete',foreground="white",width = 80,activebackground="white",height=60,border=0,background='white',default='active',image=head.start_button_photo,command=head.start_torrent)
         head.start_button.pack(side=tk.LEFT)
 
         head.stop_button_photo = tk.PhotoImage(file=r"images/stop_button.png")
         head.stop_button_photo = head.stop_button_photo.subsample(4,4)
         
-        head.stop_button = tk.Button(head.buttons_frame,highlightcolor='white',text='Delete',foreground="white",width = 80,activebackground="white",height=60,border=0,background='white',default='active',image=head.stop_button_photo,command=head.delete_torrent)
+        head.stop_button = tk.Button(head.buttons_frame,highlightcolor='white',text='Delete',foreground="white",width = 80,activebackground="white",height=60,border=0,background='white',default='active',image=head.stop_button_photo,command=head.stop_torrent)
         head.stop_button.pack(side = tk.LEFT)
 
         head.delete_button_photo = tk.PhotoImage(file=r"images/delete_button.png")
@@ -125,21 +125,31 @@ class HeadWindow(tk.Tk): #главное окно
     
         head.chest_button_photo = tk.PhotoImage(file=r"images/chest.png")
         head.open_chest_button_photo = tk.PhotoImage(file=r"images/chest_open.png")
-        head.chest_button_photo = head.chest_button_photo.subsample(9,9)
+        head.chest_button_photo = head.chest_button_photo.subsample(8,8)
         head.open_chest_button_photo = head.open_chest_button_photo.subsample(10,10)
         head.chest = False
 
         head.chest_button = tk.Button(head.buttons_frame,highlightcolor='white',text='Delete',foreground="white",activebackground="white",height=55,width=100,border=0,background='white',default='active',image=head.chest_button_photo,command=lambda : head.ask_torrent_file(chest = True))
         head.chest_button.pack(side=tk.LEFT,padx=40)
 
-        
-        head.info_photo = tk.PhotoImage(file=r"images/info.png")
-        head.info_photo = head.info_photo.subsample(9,9)
-
-        head.info_button = tk.Button(head.buttons_frame,highlightcolor='white',text='Delete',foreground="white",activebackground="white",height=55,width=60,border=0,background='white',default='active',image=head.info_photo,command=lambda : head.ask_torrent_file(chest = True))
-        head.info_button.pack(side=tk.LEFT)
+   
 
         head.buttons_frame.pack(fill=tk.X)
+    
+    def start_torrent(head):
+        try:
+            selected = int(head.viewer.focus())
+            head.installation_form_list[selected].status.value = InstallationForm.RUN
+        except Exception:
+            pass
+
+    def stop_torrent(head):
+        try:
+            selected = int(head.viewer.focus())
+            head.installation_form_list[selected].status.value = InstallationForm.STOP
+        except Exception:
+            pass
+
 
     def set_viewer(head):
         '''Установка обзорщика установок'''
@@ -154,7 +164,7 @@ class HeadWindow(tk.Tk): #главное окно
 
     def set_columns_and_fill_headings(head):
         '''Установка столбцов и заполнение заголовков'''
-        titles =  ["Name","Size","Progress","Status","Peers","Speed"]
+        titles =  ["Имя","Размер","Прогресс","Статус","Пиры","Скорость"]
 
         wid = head.head_width
         sizes = [wid//3+wid//10,wid//14,wid//8,wid//8,wid//14,wid//14]
@@ -210,13 +220,20 @@ class HeadWindow(tk.Tk): #главное окно
         id = len(head.torrent_list)
 
         #Начало установки
-        head.installation_form_list[id] = InstallationForm(head,torrent,id)
+        head.installation_form_list[id] = InstallationForm(head,torrent,id,head.torrent_show.size)
         head.installation_form_list[id].pack_to_viewer()
         head.installation_form_list[id].begin()
 
 
     def delete_torrent(head):
-        pass
+        try:
+            selected = int(head.viewer.focus())
+            if selected != '':            
+                if messagebox.askyesno("Удаление торрент-файла","Вы уверены, что хотите удалить торрент-файл?"):
+                    head.viewer.delete(selected)
+                    head.installation_form_list[selected].status.value = InstallationForm.DELETE
+        except Exception as e :
+            pass
 
 if __name__ == "__main__":
     window = HeadWindow() 
