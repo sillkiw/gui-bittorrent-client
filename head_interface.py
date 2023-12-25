@@ -38,6 +38,8 @@ class HeadWindow(tk.Tk): #главное окно
         #Установка обзорщика установок
         head.set_viewer()
     
+
+
     def ask_torrent_file(head,chest = False): 
         '''Выбор торрент-файла'''
         if chest:
@@ -219,6 +221,7 @@ class HeadWindow(tk.Tk): #главное окно
         #установка id для обновления информации о установке на экране
         id = len(head.torrent_list)
 
+        
         #Начало установки
         head.installation_form_list[id] = InstallationForm(head,torrent,id,head.torrent_show.size)
         head.installation_form_list[id].pack_to_viewer()
