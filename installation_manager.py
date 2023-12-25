@@ -16,6 +16,7 @@ class Installation_MNG(multiprocessing.Process):
         imng.torrent = torrent
         #Pipe c head
         imng.to_head = to_head
+      
         #Общий прогресс установки
         imng.progress = 0
         imng.progress_in_per = 0
@@ -44,10 +45,11 @@ class Installation_MNG(multiprocessing.Process):
                     imng.peer_mng.sent_all_peers_notinterested()
                     imng.display_progress(status='Stopped')
                     imng.was_paused = True
-            else:  # imng.status.value ==  Installation_MNG.DELETE:
+            elif imng.status.value ==  Installation_MNG.DELETE:
                 imng.delete_files()
                 break
-         
+            else:
+                break
 
         imng.status.value == Installation_MNG.FINISHED
         imng.display_progress(status = 'Finished')
@@ -136,6 +138,8 @@ class Installation_MNG(multiprocessing.Process):
         imng.progress_in_per = round(float((float(imng.progress)/imng.size) * 100),2)
         if imng.progress_in_per > 100:
             imng.progress_in_per = 100
+            imng.status.value = Installation_MNG.FINISHED
+          
         progress_show = f'{imng.progress_in_per}%'
         imng.to_head.send((progress_show,status,peer_show,imng.speed))
 
