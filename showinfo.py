@@ -44,7 +44,7 @@ class winfoWindow(tk.Toplevel):
         #Установка кнопки и лейбла "Source"
         winfo.set_source_label_and_button()
         
-        #Установка кнопки и лейбла "Direction"
+        #Установка кнопки и лейбла "destination"
         winfo.set_destination_label_and_button()
 
         #Установка обзорщика файловой системы торрент-файла
@@ -71,7 +71,9 @@ class winfoWindow(tk.Toplevel):
         winfo.winfo_font2 = font.Font(family= "Helvetica", size=15) 
         winfo.style_button = ttk.Style()
         winfo.style_button.configure('Heading.TButton', anchor=tk.W,font = winfo.winfo_font)        
-        winfo.style_button.configure('Heading.Label', anchor=tk.W,font = winfo.winfo_font2)    
+        winfo.style_button.configure('Heading.Label', anchor=tk.W,font = winfo.winfo_font2)   
+        winfo.style_button.configure("mystyle2.Treeview",font=('Segoe',11)) 
+        winfo.style_button.configure("mystyle2.Treeview.Heading",font=('Segoe', 9))
     
     def set_source_label_and_button(winfo):
         '''Установка  лейбла Source и кнопки для изменения торрент-файла'''
@@ -79,14 +81,14 @@ class winfoWindow(tk.Toplevel):
         winfo.source_frame = tk.Frame(winfo)
         winfo.source_frame.pack(fill=tk.X,pady=20)
 
-        ttk.Label(winfo.source_frame,text="Source:",width=11,font=winfo.winfo_font,style='Heading.Label').pack(side="left",anchor="w")
+        ttk.Label(winfo.source_frame,text="Source:",width=10,font=winfo.winfo_font,style='Heading.Label').pack(side="left",padx=19,anchor="w")
        
         #Фото пиратского флага
         winfo.pirate_photo = tk.PhotoImage(file=r"images/icon.png")
         winfo.pirate_photo = winfo.pirate_photo.subsample(3,3)
         
         #Установка кнопки для изменения торрент-файла
-        winfo.source_button = ttk.Button(winfo.source_frame,text = " "+winfo.torrent.name,width = winfo.winfo_width//13,image=winfo.pirate_photo,compound="left",style="Heading.TButton",command=winfo.change_torrent)
+        winfo.source_button = ttk.Button(winfo.source_frame,text = " "+winfo.torrent.name,width = winfo.winfo_width//14,image=winfo.pirate_photo,compound="left",style="Heading.TButton",command=winfo.change_torrent)
         winfo.source_button.pack(anchor="sw")
     
     def set_destination_label_and_button(winfo):
@@ -95,15 +97,15 @@ class winfoWindow(tk.Toplevel):
         winfo.destination_frame = tk.Frame(winfo)
         winfo.destination_frame.pack(fill=tk.X)
 
-        ttk.Label(winfo.destination_frame,width=10,text="Destination:",font=winfo.winfo_font).pack(side="left",anchor="w")
+        ttk.Label(winfo.destination_frame,width=10,text="Destination:",font=winfo.winfo_font).pack(side="left",padx = 15,anchor="w")
 
         #Иконка файла
         winfo.file_photo = tk.PhotoImage(file=r"images/file_icon.png")
         winfo.file_photo = winfo.file_photo.subsample(5,8)
 
         #Установка кнопки для изменения пути куда будет скачан файл
-        winfo.destination_button = ttk.Button(winfo.destination_frame,text = winfo.torrent.destination,width = winfo.winfo_width//13,image=winfo.file_photo,compound="left",style='Heading.TButton',command=winfo.change_destination)
-        winfo.destination_button.pack(anchor="sw")
+        winfo.destination_button = ttk.Button(winfo.destination_frame,text = winfo.torrent.destination,width = winfo.winfo_width//14,image=winfo.file_photo,compound="left",style='Heading.TButton',command=winfo.change_destination)
+        winfo.destination_button.pack(anchor="sw",padx=3)
 
     def change_torrent(winfo):
         '''Изменение торрент-файла'''
@@ -152,7 +154,7 @@ class winfoWindow(tk.Toplevel):
         winfo.not_tick_image = tk.PhotoImage(file=r"images/not_tick.png") 
 
         #Установка файловой системы
-        winfo.file_system = ttk.Treeview(winfo.file_system_frame,yscrollcommand=winfo.vsb.set,style="mystyle.Treeview")
+        winfo.file_system = ttk.Treeview(winfo.file_system_frame,yscrollcommand=winfo.vsb.set,style="mystyle2.Treeview")
 
         winfo.file_system.tag_configure('chose',image=winfo.tick_image)
         winfo.file_system.tag_configure('unchose',image=winfo.not_tick_image)
@@ -367,12 +369,38 @@ class winfoWindow(tk.Toplevel):
 
         #Пользователь согласился на установку
         winfo.state_of_answer = winfoWindow.__States_of_answer__.T_OPENED
-           
+        
+        winfo.take_chosen_files()
+        
+        if winfo.cnt_chosen_file == 0:
+            winfo.close_pressed()
         #Разрещаем пользователю пользоваться главным окном
         winfo.grab_release()
 
         #Закрытие информационного окна
         winfo.destroy()
+
+    def take_chosen_files(winfo):
+        def add_chose_file(root_folder_system,root_folder_name):
+            for file_or_folder in root_folder_system:
+                children = list(winfo.file_system.get_children(file_or_folder))
+                if children:
+                    root_folder_name += '\\'+file_or_folder
+                    add_chose_file(children,root_folder_name)
+                else:
+                    path = root_folder_name+'\\'+file_or_folder
+                    for file in winfo.torrent.file_names:
+                        if path == file['path']:
+                            file['chose'] = True
+                    print(winfo.torrent.file_names)
+                
+        winfo.cnt_chosen_file = 0
+        root_folder_system = winfo.file_system.get_children(winfo.torrent.root_folder_name)
+        if 'chose' in winfo.file_system.item(winfo.torrent.root_folder_name, "tags"):
+            winfo.cnt_chosen_file += 1
+            add_chose_file(root_folder_system,winfo.torrent.root_folder_name)
+
+            
 
 
 def convert(siz):
