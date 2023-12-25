@@ -12,7 +12,7 @@ class PieceManager:
         for file in piemng.files:
             id_piece = file['idPiece']
             if file['download']:
-                piemng.pieces[id_piece].to_download = False
+                piemng.pieces[id_piece].to_download = True
             piemng.pieces[id_piece].related_files.append(file)
     
     def initialize_pieces(piemng):
@@ -35,12 +35,12 @@ class PieceManager:
         piece_index = piece_message['piece_index']
         block_offset = piece_message['begin']
         block_data = piece_message['block']
-
+        print(piece_index)
         if piemng.pieces[piece_index].is_full:
             return
         try:
             piemng.pieces[piece_index].put_to_block(block_offset,block_data)
-
+            
             if piemng.pieces[piece_index].all_blocks_full():
                 if piemng.pieces[piece_index].relief_piece_from_buff():
                     piemng.bitfield[piece_index] = 1
@@ -70,7 +70,7 @@ class PieceManager:
             while current_size_file > 0:
                 id_piece = int(piece_offset / piemng.torrent.piece_length)
                 piece_size = piemng.pieces[id_piece].piece_size - piece_size_used
-                print(f)
+
                 if current_size_file - piece_size < 0:
                     file = {"length": current_size_file,
                             "idPiece": id_piece,
