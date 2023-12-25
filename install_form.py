@@ -15,6 +15,7 @@ class InstallationForm:
         install_form.size_c = convert(install_form.size)
         install_form.id = id
         install_form.status = Value('i',InstallationForm.RUN)
+      
         #Труба для обмена сообщениями между установочным процессорои и графическим интерфейсом
         install_form.to_head,install_form.from_install = Pipe()
         #Установочный процесс
