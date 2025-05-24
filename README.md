@@ -1,4 +1,4 @@
-# Torrent Client with gui
+# Torrent Client with GUI
 
 This project is a basic implementation of a Torrent Client with GUI. The client connects to torrent trackers, discovers peers, downloads files in pieces, and assembles them, following the fundamentals of the BitTorrent protocol. This project demonstrates concepts of peer-to-peer (P2P) networking, file handling, and asynchronous data exchange in Python .
 
