@@ -1,36 +1,36 @@
-# Torrent Client with GUI
+# Торрент‑клиент с графическим интерфейсом
 
-This project is a basic implementation of a Torrent Client with GUI. The client connects to torrent trackers, discovers peers, downloads files in pieces, and assembles them, following the fundamentals of the BitTorrent protocol. This project demonstrates concepts of peer-to-peer (P2P) networking, file handling, and asynchronous data exchange in Python .
+Этот проект представляет собой базовую реализацию торрент‑клиента с графическим интерфейсом. Клиент подключается к торрент‑трекерам, обнаруживает пиры, загружает файлы по кускам и собирает их, следуя основам протокола BitTorrent. Проект демонстрирует концепции одноранговых (P2P) сетей, работы с файлами и асинхронного обмена данными на Python.
 
-## Features
+## Возможности
 
-- **Torrent File Parsing**: Reads and extracts metadata and tracker information from `.torrent` files.
-- **Tracker Communication**: Connects with torrent trackers to retrieve lists of peers.
-- **Peer Discovery and Connection**: Connects with peers and maintains active connections to download data.
-- **Piece-wise Downloading**: Downloads files piece by piece from multiple peers, increasing efficiency.
-- **Piece Verification**: Validates downloaded pieces against hash checks to ensure data integrity.
-- **File Assembly**: Reassembles downloaded pieces into the original file.
+- **Парсинг торрент‑файлов**: чтение и извлечение метаданных и информации о трекерах из файлов `.torrent`.
+- **Общение с трекером**: подключение к трекерам для получения списка пиров.
+- **Обнаружение пиров и соединение**: установление и поддержание активных соединений с пирами для загрузки данных.
+- **Загрузка по кускам**: скачивание файлов кусок за куском от нескольких пиров для повышения скорости.
+- **Проверка целостности кусочков**: верификация загруженных кусочков по хеш‑суммам для гарантии корректности данных.
+- **Сборка файла**: объединение загруженных кусочков в оригинальный файл.
 
-## Getting Started
+## Начало работы
 
-### Prerequisites
+### Требования
 
-- Python 3.8 or higher
-- The required Python packages are listed in `req.txt`.
+- Python 3.8 или выше  
+- Зависимости перечислены в файле `req.txt`.
 
-### Installation
+### Установка
 
-1. Clone the repository:
+1. Клонируйте репозиторий:  
    ```bash
    git clone https://github.com/sillkiw/TorrentClientProjectCourse.git
    cd TorrentClientProjectCourse
+   ```
+2. Установите зависимости с req.txt
+   ```bash
+   pip install -r req.txt
+   ```
+### Использование 
+Просто запустите head_interface.py и вы увидите графический интерфейс.
 
-2. Install dependencies:
-    ```bash
-    pip install -r req.txt
-    
-### Usage 
-Just run head_interface.py and you will meet with GUI
-
-### Acknowledgments
-This project drew inspiration and referenced code from https://github.com/gallexis/PyTorrent by gallexis.
+### Благодарности
+Этот проект черпал вдохновение и ссылался на код из https://github.com/gallexis/PyTo.
