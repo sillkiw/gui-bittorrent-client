@@ -4,8 +4,8 @@
 
 ## Скриншот
 
+<img width="1435" height="937" alt="image" src="https://github.com/user-attachments/assets/730665b5-7426-438d-be77-206be8a85cda" />
 
-<img width="1431" height="935" alt="image" src="https://github.com/user-attachments/assets/f74778a5-80c9-4470-a5ae-c743ca16ffdb" />
 
 ## Основные возможности
 
