@@ -47,4 +47,4 @@ python head_interface.py
 
 ## Благодарности
 
-Проект вдохновлён и частично опирается на реализацию клиента из [PyTo от gallexis](https://github.com/gallexis/PyTo). 
+Проект вдохновлён и частично опирается на реализацию клиента из [PyTorrent от gallexis](https://github.com/gallexis/PyTorrent). 
