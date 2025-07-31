@@ -28,8 +28,8 @@
 
 1. Клонируйте репозиторий:
    ```bash
-   git clone https://github.com/sillkiw/TorrentClientProjectCourse.git
-   cd TorrentClientProjectCourse
+   git clone https://github.com/sillkiw/gui-bittorrent-client.git
+   cd gui-bittorrent-client
    ```
 
 2. Установите зависимости:
